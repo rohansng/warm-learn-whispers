@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { TILEntry, User } from '../types';
 import { 
@@ -15,6 +14,7 @@ import AddEntryCard from './AddEntryCard';
 import TimelineView from './TimelineView';
 import RandomMemoryCard from './RandomMemoryCard';
 import Footer from './Footer';
+import UserChat from './UserChat';
 
 interface DashboardProps {
   username: string;
@@ -166,6 +166,9 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
       </main>
       
       <Footer />
+      
+      {/* Chat Component */}
+      <UserChat username={username} />
     </div>
   );
 };

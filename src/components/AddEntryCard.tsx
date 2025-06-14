@@ -4,26 +4,45 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { TILEntry } from '../types';
-import { saveEntry } from '../utils/localStorage';
+import { getProfileByUsername, saveNote } from '../utils/supabaseStorage';
 import { getCategoryEmoji } from '../utils/emojis';
-import { Plus, Tag } from 'lucide-react';
+import { Plus, Tag, Sparkles } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface AddEntryCardProps {
   username: string;
   onEntryAdded: () => void;
 }
 
+const DEFAULT_TAGS = [
+  { name: '#coding', emoji: '💻' },
+  { name: '#design', emoji: '🎨' },
+  { name: '#productivity', emoji: '⚡' },
+  { name: '#mindfulness', emoji: '🧘' },
+  { name: '#reading', emoji: '📚' },
+  { name: '#fitness', emoji: '💪' },
+  { name: '#cooking', emoji: '👨‍🍳' },
+  { name: '#travel', emoji: '✈️' },
+  { name: '#language', emoji: '🗣️' },
+  { name: '#business', emoji: '💼' },
+  { name: '#science', emoji: '🔬' },
+  { name: '#music', emoji: '🎵' }
+];
+
 const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) => {
   const [content, setContent] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
-  const addTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      const newTag = tagInput.trim().startsWith('#') ? tagInput.trim() : `#${tagInput.trim()}`;
-      setTags([...tags, newTag]);
+  const addTag = (tagName?: string) => {
+    const newTagName = tagName || tagInput.trim();
+    if (newTagName && !tags.includes(newTagName)) {
+      const formattedTag = newTagName.startsWith('#') ? newTagName : `#${newTagName}`;
+      setTags([...tags, formattedTag]);
       setTagInput('');
     }
   };
@@ -38,27 +57,52 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
 
     setIsSubmitting(true);
 
-    const entry: TILEntry = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      username,
-      content: content.trim(),
-      tags: tags,
-      date: new Date().toISOString(),
-      emoji: getCategoryEmoji(tags),
-      createdAt: new Date()
-    };
+    try {
+      // Get user profile
+      const profile = await getProfileByUsername(username);
+      if (!profile) {
+        toast({
+          title: "Error",
+          description: "User profile not found. Please try logging in again.",
+          variant: "destructive"
+        });
+        setIsSubmitting(false);
+        return;
+      }
 
-    saveEntry(entry);
-    
-    // Reset form
-    setContent('');
-    setTags([]);
-    setTagInput('');
-    
-    setTimeout(() => {
+      const entry = {
+        content: content.trim(),
+        tags: tags,
+        date: new Date().toISOString().split('T')[0], // YYYY-MM-DD format
+        emoji: getCategoryEmoji(tags)
+      };
+
+      const savedNote = await saveNote(profile.id, entry);
+      
+      if (savedNote) {
+        toast({
+          title: "Success! 🎉",
+          description: "Your learning moment has been saved!",
+        });
+        
+        // Reset form
+        setContent('');
+        setTags([]);
+        setTagInput('');
+        onEntryAdded();
+      } else {
+        throw new Error('Failed to save note');
+      }
+    } catch (error) {
+      console.error('Error saving entry:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save your entry. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsSubmitting(false);
-      onEntryAdded();
-    }, 500);
+    }
   };
 
   return (
@@ -79,18 +123,43 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
           />
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-4">
-          {tags.map((tag, index) => (
-            <span
-              key={index}
-              className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-lavender-100 text-lavender-800 cursor-pointer hover:bg-lavender-200 transition-colors"
-              onClick={() => removeTag(tag)}
-            >
-              {tag} ×
-            </span>
-          ))}
+        {/* Popular Tags Section */}
+        <div className="space-y-3">
+          <div className="flex items-center space-x-2">
+            <Sparkles className="w-4 h-4 text-lavender-600" />
+            <span className="text-sm font-medium text-gray-700">Popular tags:</span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {DEFAULT_TAGS.map((tag) => (
+              <Badge
+                key={tag.name}
+                variant="outline"
+                className="cursor-pointer hover:bg-lavender-100 border-lavender-300 text-lavender-700 transition-colors"
+                onClick={() => addTag(tag.name)}
+              >
+                <span className="mr-1">{tag.emoji}</span>
+                {tag.name}
+              </Badge>
+            ))}
+          </div>
         </div>
 
+        {/* Selected Tags */}
+        {tags.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {tags.map((tag, index) => (
+              <Badge
+                key={index}
+                className="cursor-pointer bg-lavender-100 text-lavender-800 hover:bg-lavender-200 transition-colors"
+                onClick={() => removeTag(tag)}
+              >
+                {tag} ×
+              </Badge>
+            ))}
+          </div>
+        )}
+
+        {/* Custom Tag Input */}
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Tag className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -98,14 +167,14 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
               value={tagInput}
               onChange={(e) => setTagInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-              placeholder="Add tags (e.g., coding, design, life)"
+              placeholder="Add custom tags..."
               className="pl-10 border-2 border-lavender-200 focus:border-lavender-400 rounded-xl"
               disabled={isSubmitting}
             />
           </div>
           <Button
             type="button"
-            onClick={addTag}
+            onClick={() => addTag()}
             variant="outline"
             className="border-lavender-300 text-lavender-700 hover:bg-lavender-50"
             disabled={!tagInput.trim() || isSubmitting}
