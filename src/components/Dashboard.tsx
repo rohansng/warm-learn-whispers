@@ -80,7 +80,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
         setUser({
           username: profile.username,
           totalEntries: userEntries.length,
-          lastVisit: new Date(profile.last_visit)
+          lastVisit: profile.last_visit ? new Date(profile.last_visit) : undefined
         });
 
         // Get random memory and check if should show add entry

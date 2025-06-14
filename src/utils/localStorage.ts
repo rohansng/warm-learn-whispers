@@ -40,8 +40,8 @@ export const getUser = async (username: string): Promise<User | null> => {
     if (profile) {
       return {
         username: profile.username,
-        totalEntries: profile.total_entries,
-        lastVisit: new Date(profile.last_visit)
+        totalEntries: profile.total_entries || 0,
+        lastVisit: profile.last_visit ? new Date(profile.last_visit) : undefined
       };
     }
   } catch (error) {

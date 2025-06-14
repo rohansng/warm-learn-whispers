@@ -22,6 +22,7 @@ export const createProfile = async (username: string): Promise<any> => {
     .from('profiles')
     .insert([{
       username,
+      email: '',
       total_entries: 0,
       last_visit: new Date().toISOString()
     }])
@@ -36,7 +37,7 @@ export const createProfile = async (username: string): Promise<any> => {
   return data;
 };
 
-export const updateProfile = async (profileId: string, updates: Partial<any>) => {
+export const updateProfile = async (profileId: string, updates: any) => {
   const { data, error } = await supabase
     .from('profiles')
     .update(updates)
