@@ -1,6 +1,14 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ChatRoom, Message, ChatRequest, UserSettings } from "@/types/chat";
+
+// Add interface for online user to avoid type inference issues
+interface OnlineUserProfile {
+  id: string;
+  username: string;
+  email: string;
+  is_online: boolean;
+  last_visit: string;
+}
 
 export const findUserByUsername = async (username: string) => {
   const { data, error } = await supabase
@@ -206,19 +214,19 @@ export const updateUserPresence = async (isOnline: boolean) => {
   }
 };
 
-export const getOnlineUsers = async (): Promise<any[]> => {
+export const getOnlineUsers = async (): Promise<OnlineUserProfile[]> => {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, username, email, is_online, last_visit')
-    .eq('is_online', true)
-    .order('username');
+    .select('id, username, email, is_online, last_visit');
 
   if (error) {
     console.error('Error fetching online users:', error);
     return [];
   }
 
-  return data || [];
+  // Type the data explicitly and filter for online users
+  const profiles = (data || []) as OnlineUserProfile[];
+  return profiles.filter(user => user.is_online === true);
 };
 
 export const trackUserPresence = () => {
