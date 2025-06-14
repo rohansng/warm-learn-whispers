@@ -6,6 +6,7 @@ import Header from './Header';
 import AddEntryCard from './AddEntryCard';
 import TimelineView from './TimelineView';
 import RandomMemoryCard from './RandomMemoryCard';
+import Footer from './Footer';
 
 interface DashboardProps {
   username: string;
@@ -92,6 +93,8 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
           </div>
         </div>
       </main>
+      
+      <Footer />
     </div>
   );
 };
