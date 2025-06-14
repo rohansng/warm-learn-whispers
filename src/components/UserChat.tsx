@@ -32,7 +32,17 @@ const UserChat: React.FC<UserChatProps> = ({ username }) => {
       .channel('chat-room')
       .on('presence', { event: 'sync' }, () => {
         const state = channel.presenceState();
-        const users = Object.keys(state).map(key => state[key][0]?.username).filter(Boolean);
+        const users: string[] = [];
+        
+        // Extract usernames from presence state
+        Object.values(state).forEach((presences: any[]) => {
+          presences.forEach((presence: any) => {
+            if (presence.username && !users.includes(presence.username)) {
+              users.push(presence.username);
+            }
+          });
+        });
+        
         setOnlineUsers(users);
       })
       .on('presence', { event: 'join' }, ({ newPresences }) => {
