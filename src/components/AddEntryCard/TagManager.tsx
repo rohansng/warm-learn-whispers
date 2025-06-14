@@ -87,21 +87,20 @@ const TagManager: React.FC<TagManagerProps> = ({
           </label>
           <div className="flex flex-wrap gap-2">
             {tags.map((tag, index) => (
-              <Badge
+              <span
                 key={index}
-                variant="secondary"
-                className="bg-purple-100 text-purple-800 border border-purple-200 hover:bg-purple-200 px-3 py-1 flex items-center gap-1"
+                className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-medium bg-purple-500 text-white border border-purple-600 hover:bg-purple-600 transition-colors"
               >
                 {getTagEmoji(tag)} {tag}
                 <button
                   type="button"
                   onClick={() => removeTag(tag)}
-                  className="ml-1 hover:text-purple-900 transition-colors"
+                  className="ml-1 hover:text-purple-200 transition-colors p-0.5 rounded-full hover:bg-purple-600"
                   disabled={isSubmitting}
                 >
                   <X className="h-3 w-3" />
                 </button>
-              </Badge>
+              </span>
             ))}
           </div>
         </div>
