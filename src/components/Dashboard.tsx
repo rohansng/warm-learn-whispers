@@ -25,7 +25,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
   const [entries, setEntries] = useState<TILEntry[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [randomMemory, setRandomMemory] = useState<TILEntry | null>(null);
-  const [showAddEntry, setShowAddEntry] = useState(false);
+  const [showAddEntry, setShowAddEntry] = useState(true); // Default to true initially
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -42,6 +42,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
           table: 'notes'
         },
         () => {
+          console.log('Notes changed, reloading data...');
           // Reload data when notes change
           loadUserData();
         }
@@ -56,10 +57,14 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
   const loadUserData = async () => {
     setLoading(true);
     try {
+      console.log('Loading user data for:', username);
+      
       // Get or create user profile
       let profile = await getProfileByUsername(username);
+      console.log('Profile found:', profile);
       
       if (!profile) {
+        console.log('Creating new profile for:', username);
         profile = await createProfile(username);
       }
 
@@ -70,6 +75,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
         });
 
         const userEntries = await getNotesByUserId(profile.id);
+        console.log('User entries:', userEntries);
         setEntries(userEntries.map(entry => ({ ...entry, username })));
 
         // Update total entries count
@@ -88,16 +94,20 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
         setRandomMemory(memory ? { ...memory, username } : null);
 
         const hasToday = await hasEntryForTodayInDB(profile.id);
+        console.log('Has entry for today:', hasToday);
         setShowAddEntry(!hasToday);
       }
     } catch (error) {
       console.error('Error loading user data:', error);
+      // If there's an error, still show the add entry card
+      setShowAddEntry(true);
     } finally {
       setLoading(false);
     }
   };
 
   const handleEntryAdded = () => {
+    console.log('Entry added, reloading data...');
     loadUserData();
   };
 
@@ -141,7 +151,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
             </div>
           )}
 
-          {/* Add entry card */}
+          {/* Add entry card - Always show initially, let the check happen in background */}
           {showAddEntry && (
             <div className="animate-scale-in">
               <AddEntryCard username={username} onEntryAdded={handleEntryAdded} />
