@@ -3,6 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { TILEntry } from '../types';
 import { formatDistanceToNow } from 'date-fns';
+import { getTagEmoji } from '../utils/emojis';
 
 interface TimelineViewProps {
   entries: TILEntry[];
@@ -64,7 +65,7 @@ const TimelineView: React.FC<TimelineViewProps> = ({ entries }) => {
                         key={tagIndex}
                         className="inline-block px-2 py-1 text-xs rounded-full bg-gradient-to-r from-mint-100 to-lavender-100 text-lavender-700 border border-lavender-200"
                       >
-                        {tag}
+                        {getTagEmoji(tag)} {tag}
                       </span>
                     ))}
                   </div>

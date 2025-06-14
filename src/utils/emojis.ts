@@ -37,3 +37,31 @@ export const getCategoryEmoji = (tags: string[]): string => {
 
   return getRandomEmoji();
 };
+
+export const getTagEmoji = (tag: string): string => {
+  const tagEmojis: { [key: string]: string } = {
+    'programming': '💻',
+    'design': '🎨',
+    'learning': '📚',
+    'work': '💼',
+    'life': '🌱',
+    'health': '🏃‍♀️',
+    'cooking': '👨‍🍳',
+    'books': '📖',
+    'science': '🔬',
+    'technology': '⚡',
+    'creativity': '💫',
+    'productivity': '⚡',
+    'mindfulness': '🧘‍♀️',
+    'fitness': '💪',
+    'travel': '✈️',
+    'music': '🎵',
+    'art': '🎨',
+    'business': '📈',
+    'finance': '💰',
+    'communication': '💬'
+  };
+  
+  const cleanTag = tag.toLowerCase();
+  return tagEmojis[cleanTag] || '🏷️';
+};

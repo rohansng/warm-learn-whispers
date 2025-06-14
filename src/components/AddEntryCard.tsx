@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { X, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from "@/integrations/supabase/client";
-import { getRandomEmoji } from '../utils/emojis';
+import { getRandomEmoji, getTagEmoji } from '../utils/emojis';
 
 interface AddEntryCardProps {
   username: string;
@@ -17,7 +17,7 @@ interface AddEntryCardProps {
   onEntryAdded: () => void;
 }
 
-// Default tags to suggest to users
+// Default tags to suggest to users with emojis
 const DEFAULT_TAGS = [
   'programming', 'design', 'learning', 'work', 'life', 'health', 'cooking',
   'books', 'science', 'technology', 'creativity', 'productivity', 'mindfulness',
@@ -29,6 +29,7 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, userId, onEntryAd
   const [newTag, setNewTag] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const { toast } = useToast();
 
   const addTag = (tagToAdd?: string) => {
@@ -103,10 +104,11 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, userId, onEntryAd
         return;
       }
 
-      // Clear form
+      // Clear form and collapse
       setContent('');
       setTags([]);
       setNewTag('');
+      setIsCollapsed(true);
       
       toast({
         title: "Entry Saved! 🎉",
@@ -125,6 +127,23 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, userId, onEntryAd
       setIsSubmitting(false);
     }
   };
+
+  // Collapsed view with plus icon
+  if (isCollapsed) {
+    return (
+      <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-lavender-200 border-2">
+        <CardContent className="p-6">
+          <Button
+            onClick={() => setIsCollapsed(false)}
+            className="w-full bg-gradient-to-r from-lavender-500 to-blush-500 hover:from-lavender-600 hover:to-blush-600 text-white font-semibold py-6 px-6 rounded-lg shadow-lg transform transition-all duration-300 hover:scale-105"
+          >
+            <Plus className="h-6 w-6 mr-2" />
+            Add New Learning Entry
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-white/90 backdrop-blur-sm shadow-lg border-lavender-200 border-2">
@@ -162,7 +181,7 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, userId, onEntryAd
                 <SelectContent>
                   {DEFAULT_TAGS.filter(tag => !tags.includes(tag)).map((tag) => (
                     <SelectItem key={tag} value={tag}>
-                      #{tag}
+                      {getTagEmoji(tag)} {tag}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -209,7 +228,7 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, userId, onEntryAd
                       variant="secondary"
                       className="bg-lavender-100 text-lavender-700 hover:bg-lavender-200 px-3 py-1"
                     >
-                      #{tag}
+                      {getTagEmoji(tag)} {tag}
                       <button
                         type="button"
                         onClick={() => removeTag(tag)}
