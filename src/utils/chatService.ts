@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ChatRoom, Message, ChatRequest, UserSettings } from "@/types/chat";
 
@@ -40,13 +41,16 @@ export const sendChatRequest = async (receiverId: string, message?: string) => {
 };
 
 export const getChatRequests = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
   const { data, error } = await supabase
     .from('chat_requests')
     .select(`
       *,
-      sender:profiles!chat_requests_sender_id_fkey(username, email)
+      sender:sender_id(username, email)
     `)
-    .eq('receiver_id', (await supabase.auth.getUser()).data.user?.id)
+    .eq('receiver_id', user.id)
     .eq('status', 'pending')
     .order('created_at', { ascending: false });
 
@@ -102,16 +106,17 @@ export const createChatRoom = async (participant1: string, participant2: string)
 };
 
 export const getChatRooms = async () => {
-  const userId = (await supabase.auth.getUser()).data.user?.id;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
   
   const { data, error } = await supabase
     .from('chat_rooms')
     .select(`
       *,
-      participant1:profiles!chat_rooms_participant_1_fkey(username, email),
-      participant2:profiles!chat_rooms_participant_2_fkey(username, email)
+      participant1:participant_1(username, email, is_online, last_visit),
+      participant2:participant_2(username, email, is_online, last_visit)
     `)
-    .or(`participant_1.eq.${userId},participant_2.eq.${userId}`)
+    .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
     .order('last_message_at', { ascending: false });
 
   if (error) {
@@ -127,7 +132,7 @@ export const getMessages = async (chatRoomId: string) => {
     .from('messages')
     .select(`
       *,
-      sender:profiles!messages_sender_id_fkey(username, email)
+      sender:sender_id(username, email)
     `)
     .eq('chat_room_id', chatRoomId)
     .eq('is_deleted', false)
@@ -246,12 +251,13 @@ export const trackUserPresence = () => {
 };
 
 export const getUserSettings = async () => {
-  const userId = (await supabase.auth.getUser()).data.user?.id;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
   
   const { data, error } = await supabase
     .from('user_settings')
     .select('*')
-    .eq('user_id', userId)
+    .eq('user_id', user.id)
     .maybeSingle();
 
   if (error && error.code !== 'PGRST116') {
@@ -264,7 +270,7 @@ export const getUserSettings = async () => {
     const { data: newSettings, error: createError } = await supabase
       .from('user_settings')
       .insert({
-        user_id: userId,
+        user_id: user.id,
         allow_chat_requests: true,
         show_typing_indicator: true,
         show_read_receipts: true,
@@ -287,12 +293,13 @@ export const getUserSettings = async () => {
 };
 
 export const updateUserSettings = async (settings: Partial<UserSettings>) => {
-  const userId = (await supabase.auth.getUser()).data.user?.id;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
   
   const { data, error } = await supabase
     .from('user_settings')
     .update(settings)
-    .eq('user_id', userId)
+    .eq('user_id', user.id)
     .select()
     .single();
 

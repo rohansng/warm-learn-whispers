@@ -8,6 +8,14 @@ import { getOnlineUsers, findUserByUsername, sendChatRequest } from '@/utils/cha
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from '@/hooks/use-toast';
 
+interface OnlineUser {
+  id: string;
+  username: string;
+  email: string;
+  is_online: boolean;
+  last_visit: string;
+}
+
 interface OnlineUsersProps {
   userId: string;
   onBack: () => void;
@@ -15,7 +23,7 @@ interface OnlineUsersProps {
 }
 
 const OnlineUsers: React.FC<OnlineUsersProps> = ({ userId, onBack, onStartChat }) => {
-  const [onlineUsers, setOnlineUsers] = useState<any[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -45,11 +53,25 @@ const OnlineUsers: React.FC<OnlineUsersProps> = ({ userId, onBack, onStartChat }
 
   const loadOnlineUsers = async () => {
     setLoading(true);
-    const users = await getOnlineUsers();
-    // Filter out current user
-    const filteredUsers = users.filter(user => user.id !== userId);
-    setOnlineUsers(filteredUsers);
-    setLoading(false);
+    try {
+      const users = await getOnlineUsers();
+      // Filter out current user and ensure proper typing
+      const filteredUsers = users
+        .filter((user: any) => user.id !== userId)
+        .map((user: any): OnlineUser => ({
+          id: user.id,
+          username: user.username || 'Unknown',
+          email: user.email || '',
+          is_online: user.is_online || false,
+          last_visit: user.last_visit || new Date().toISOString()
+        }));
+      setOnlineUsers(filteredUsers);
+    } catch (error) {
+      console.error('Error loading online users:', error);
+      setOnlineUsers([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleStartChat = async (username: string) => {
