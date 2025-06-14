@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from '@/components/ui/button';
@@ -6,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, User as UserIcon } from 'lucide-react';
 import GuestAuth from '../components/GuestAuth';
 
 interface AuthProps {
@@ -303,7 +302,8 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onGuestSuccess }) => {
               className="w-full border-2 border-mint-300 text-mint-700 hover:bg-mint-50 rounded-xl py-3"
               disabled={loading}
             >
-              Continue as Guest 👤
+              <UserIcon className="w-4 h-4 mr-2" />
+              Continue as Guest
             </Button>
           </div>
           

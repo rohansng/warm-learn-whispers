@@ -1,13 +1,15 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { getProfileByUsername, createProfile, getNotesByUserId } from '@/utils/supabaseStorage';
-import { User } from '../types';
+import { User as UserType } from '../types';
+import { User } from 'lucide-react';
 
 interface GuestAuthProps {
-  onGuestSuccess: (user: User) => void;
+  onGuestSuccess: (user: UserType) => void;
   onBack: () => void;
 }
 
@@ -94,7 +96,11 @@ const GuestAuth: React.FC<GuestAuthProps> = ({ onGuestSuccess, onBack }) => {
     <div className="min-h-screen bg-gradient-warm flex items-center justify-center p-4 font-poppins">
       <Card className="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl border-0">
         <CardHeader className="text-center space-y-4">
-          <div className="text-4xl mb-2">👤✨</div>
+          <div className="flex justify-center mb-2">
+            <div className="w-16 h-16 bg-gradient-to-r from-mint-500 to-lavender-500 rounded-full flex items-center justify-center">
+              <User className="w-8 h-8 text-white" />
+            </div>
+          </div>
           <CardTitle className="text-2xl font-bold bg-gradient-to-r from-lavender-600 to-blush-500 bg-clip-text text-transparent">
             Continue as Guest
           </CardTitle>
@@ -136,7 +142,10 @@ const GuestAuth: React.FC<GuestAuthProps> = ({ onGuestSuccess, onBack }) => {
                   Checking username...
                 </div>
               ) : (
-                "Continue as Guest 🚀"
+                <div className="flex items-center justify-center">
+                  <User className="w-4 h-4 mr-2" />
+                  Continue as Guest
+                </div>
               )}
             </Button>
           </form>
