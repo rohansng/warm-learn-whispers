@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { TILEntry, User } from '../types';
@@ -5,8 +6,8 @@ import Header from './Header';
 import TILForm from './TILForm';
 import TILList from './TILList';
 import RandomTIL from './RandomTIL';
-import ChatSystem from './Chat/ChatSystem';
-import { getNotesByUserId, updateProfile } from '@/utils/supabaseStorage';
+import ChatSystem from './Chat/ChatWindow';
+import { getNotesByUserId } from '@/utils/supabaseStorage';
 import { useToast } from '@/hooks/use-toast';
 
 interface DashboardProps {
@@ -48,7 +49,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
           username: metaUsername,
           email: user.email || '',
           totalEntries: notes.length,
-          lastVisit: new Date().toISOString()
+          lastVisit: new Date()
         });
       } else {
         setUserData({
@@ -56,7 +57,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
           username: profile?.username || 'User',
           email: user.email || '',
           totalEntries: notes.length,
-          lastVisit: profile?.last_visit || new Date().toISOString()
+          lastVisit: profile?.last_visit ? new Date(profile.last_visit) : new Date()
         });
       }
     } catch (error) {
@@ -72,11 +73,6 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
   const addEntry = (newEntry: TILEntry) => {
     setEntries([newEntry, ...entries]);
     setUserData(prev => prev ? { ...prev, totalEntries: prev.totalEntries + 1 } : null);
-  };
-
-  const handleProfileUpdate = () => {
-    // Refresh user data when profile is updated
-    loadUserData();
   };
 
   return (
@@ -109,11 +105,10 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
         </div>
 
         {isChatOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4">
-              <ChatSystem userId={user.id} />
-            </div>
-          </div>
+          <ChatSystem 
+            userId={user.id}
+            onClose={() => setIsChatOpen(false)}
+          />
         )}
       </main>
     </div>
