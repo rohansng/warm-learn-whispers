@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { TILEntry, User } from '../types';
 import { getEntriesByUsername, getUser, saveUser, hasEntryForToday, getRandomPastEntry } from '../utils/localStorage';
@@ -60,12 +59,12 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
         <div className="space-y-8">
           {/* Hero section with animated pulse */}
           <div className="text-center animate-fade-in">
-            <div className="pulse-red inline-block p-4 rounded-full bg-gradient-primary mb-4">
+            <div className="pulse-cherry inline-block p-4 rounded-full bg-gradient-primary mb-4">
               <h1 className="text-4xl font-orbitron font-bold text-white mb-2">
                 Welcome back, {username}! 🚀
               </h1>
             </div>
-            <p className="text-gray-300 text-lg">
+            <p className="text-gray-600 text-lg">
               {entries.length === 0 
                 ? "Ready to start your learning journey?" 
                 : `You've captured ${entries.length} amazing learning moment${entries.length === 1 ? '' : 's'}!`

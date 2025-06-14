@@ -10,10 +10,10 @@ interface RandomMemoryCardProps {
 
 const RandomMemoryCard: React.FC<RandomMemoryCardProps> = ({ entry }) => {
   return (
-    <Card className="glass-card p-6 rounded-2xl glow-red animate-scale-in">
+    <Card className="glass-card p-6 rounded-2xl glow-cherry animate-scale-in">
       <div className="flex items-start space-x-4">
         <div className="flex-shrink-0">
-          <Heart className="w-6 h-6 text-red-cherry animate-bounce-gentle" />
+          <Heart className="w-6 h-6 text-cherry-red animate-bounce-gentle" />
         </div>
         
         <div className="flex-1">
@@ -23,10 +23,10 @@ const RandomMemoryCard: React.FC<RandomMemoryCardProps> = ({ entry }) => {
           
           <div className="glass rounded-lg p-4 mb-3">
             <div className="flex items-center space-x-2 mb-2">
-              <div className="pulse-red p-1 rounded-full bg-gradient-primary">
+              <div className="pulse-cherry p-1 rounded-full bg-gradient-primary">
                 <span className="text-2xl">{entry.emoji}</span>
               </div>
-              <time className="text-sm font-medium text-red-cherry font-orbitron">
+              <time className="text-sm font-medium text-cherry-red font-orbitron">
                 {new Date(entry.date).toLocaleDateString('en-US', {
                   month: 'long',
                   day: 'numeric',
@@ -35,7 +35,7 @@ const RandomMemoryCard: React.FC<RandomMemoryCardProps> = ({ entry }) => {
               </time>
             </div>
             
-            <p className="text-white leading-relaxed">
+            <p className="text-gray-800 leading-relaxed">
               {entry.content}
             </p>
             
@@ -53,7 +53,7 @@ const RandomMemoryCard: React.FC<RandomMemoryCardProps> = ({ entry }) => {
             )}
           </div>
           
-          <p className="text-sm text-red-soft">
+          <p className="text-sm text-cherry-red">
             ✨ Here's a beautiful moment from your learning journey!
           </p>
         </div>

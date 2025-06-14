@@ -57,20 +57,22 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Red/Black theme colors
-				'dark-base': '#0d0d0d',
-				'dark-secondary': '#121212',
-				'red-crimson': '#DC143C',
-				'red-cherry': '#FF1744',
-				'red-scarlet': '#FF2400',
-				'red-soft': '#FF6B6B',
+				// White & Red Cherry Cream theme colors
+				'cherry-red': '#ff4b5c',
+				'cherry-light': '#ff6b7a',
+				'cherry-dark': '#e63946',
+				'cream-white': '#ffffff',
+				'cream-light': '#fef7f7',
+				'cream-pink': '#ffe0e3',
+				'soft-gray': '#f8f9fa',
 			},
 			backgroundImage: {
-				'gradient-primary': 'linear-gradient(135deg, #0d0d0d, #DC143C)',
-				'gradient-radial': 'radial-gradient(circle at top left, #FF1744, #0d0d0d)',
-				'gradient-diagonal': 'linear-gradient(to bottom right, #121212, #FF2400, #0d0d0d)',
-				'gradient-footer': 'linear-gradient(to right, #0d0d0d, #DC143C)',
-				'gradient-animated': 'linear-gradient(-45deg, #0d0d0d, #DC143C, #FF1744, #121212)',
+				'gradient-primary': 'linear-gradient(135deg, #ffffff, #ff4b5c)',
+				'gradient-radial': 'radial-gradient(circle at top left, #ff4b5c, #ffffff)',
+				'gradient-diagonal': 'linear-gradient(to bottom right, #fef7f7, #ff4b5c, #ffffff)',
+				'gradient-footer': 'linear-gradient(to right, #ffffff, #ff4b5c)',
+				'gradient-animated': 'linear-gradient(-45deg, #ffffff, #ff4b5c, #ff6b7a, #fef7f7)',
+				'gradient-soft': 'linear-gradient(135deg, #fef7f7, #ffe0e3)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -102,9 +104,9 @@ export default {
 					'0%': { opacity: '0', transform: 'scale(0.9)' },
 					'100%': { opacity: '1', transform: 'scale(1)' }
 				},
-				'pulse-red': {
-					'0%, 100%': { boxShadow: '0 0 0 0 rgba(220, 20, 60, 0.7)' },
-					'70%': { boxShadow: '0 0 0 10px rgba(220, 20, 60, 0)' }
+				'pulse-cherry': {
+					'0%, 100%': { boxShadow: '0 0 0 0 rgba(255, 75, 92, 0.7)' },
+					'70%': { boxShadow: '0 0 0 10px rgba(255, 75, 92, 0)' }
 				},
 				'gradient-shift': {
 					'0%': { backgroundPosition: '0% 50%' },
@@ -119,7 +121,7 @@ export default {
 				'fade-in-up': 'fade-in-up 0.8s ease-out',
 				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
 				'scale-in': 'scale-in 0.4s ease-out',
-				'pulse-red': 'pulse-red 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'pulse-cherry': 'pulse-cherry 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
 				'gradient-shift': 'gradient-shift 8s ease infinite',
 			}
 		}
