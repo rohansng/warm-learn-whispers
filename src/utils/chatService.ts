@@ -18,9 +18,13 @@ export const findUserByUsername = async (username: string) => {
 };
 
 export const sendChatRequest = async (receiverId: string, message?: string) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
   const { data, error } = await supabase
     .from('chat_requests')
     .insert({
+      sender_id: user.id,
       receiver_id: receiverId,
       message: message || '',
       status: 'pending'
@@ -139,10 +143,14 @@ export const getMessages = async (chatRoomId: string) => {
 };
 
 export const sendMessage = async (chatRoomId: string, content: string, messageType: 'text' | 'image' | 'voice' | 'note_share' = 'text', metadata: Record<string, any> = {}) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+
   const { data, error } = await supabase
     .from('messages')
     .insert({
       chat_room_id: chatRoomId,
+      sender_id: user.id,
       content,
       message_type: messageType,
       metadata

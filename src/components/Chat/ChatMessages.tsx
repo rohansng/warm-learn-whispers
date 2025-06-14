@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getMessages, sendMessage, markMessagesAsRead } from '@/utils/chatService';
 import { ChatRoom, Message } from '@/types/chat';
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ChatMessagesProps {
   chatRoom: ChatRoom;
@@ -20,6 +21,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ chatRoom, userId, onBack })
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const otherParticipantId = chatRoom.participant_1 === userId ? chatRoom.participant_2 : chatRoom.participant_1;
 
@@ -88,24 +90,23 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ chatRoom, userId, onBack })
   return (
     <div className="flex-1 flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center p-4 border-b border-gray-200">
+      <div className={`flex items-center border-b border-gray-200 ${isMobile ? 'p-3' : 'p-4'}`}>
         <Button variant="ghost" size="sm" onClick={onBack} className="mr-2">
           <ArrowLeft className="w-4 h-4" />
         </Button>
-        <Avatar className="w-8 h-8 mr-3">
+        <Avatar className={`mr-3 ${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`}>
           <AvatarFallback className="bg-purple-100 text-purple-600 text-sm">
-            {/* We'll need to get the other participant's username */}
             ?
           </AvatarFallback>
         </Avatar>
         <div>
-          <h3 className="font-medium text-sm">Chat</h3>
-          <p className="text-xs text-gray-500">Active now</p>
+          <h3 className={`font-medium ${isMobile ? 'text-sm' : 'text-sm'}`}>Chat</h3>
+          <p className={`text-gray-500 ${isMobile ? 'text-xs' : 'text-xs'}`}>Active now</p>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+      <div className={`flex-1 overflow-y-auto space-y-3 ${isMobile ? 'p-3' : 'p-4'}`}>
         {loading ? (
           <div className="text-center text-gray-500 py-8">
             Loading messages...
@@ -128,9 +129,9 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ chatRoom, userId, onBack })
                     isOwnMessage
                       ? 'bg-purple-500 text-white'
                       : 'bg-gray-100 text-gray-900'
-                  }`}
+                  } ${isMobile ? 'max-w-[80%]' : 'max-w-xs'}`}
                 >
-                  <p>{message.content}</p>
+                  <p className={isMobile ? 'text-sm' : ''}>{message.content}</p>
                   <p
                     className={`text-xs mt-1 ${
                       isOwnMessage ? 'text-purple-100' : 'text-gray-500'
@@ -150,7 +151,7 @@ const ChatMessages: React.FC<ChatMessagesProps> = ({ chatRoom, userId, onBack })
       </div>
 
       {/* Message Input */}
-      <div className="p-4 border-t border-gray-200">
+      <div className={`border-t border-gray-200 ${isMobile ? 'p-3' : 'p-4'}`}>
         <div className="flex items-center space-x-2">
           <Input
             value={newMessage}

@@ -8,6 +8,7 @@ import ChatMessages from './ChatMessages';
 import UserSearch from './UserSearch';
 import ChatRequests from './ChatRequests';
 import { ChatRoom } from '@/types/chat';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ChatWindowProps {
   onClose: () => void;
@@ -17,10 +18,17 @@ interface ChatWindowProps {
 const ChatWindow: React.FC<ChatWindowProps> = ({ onClose, userId }) => {
   const [activeView, setActiveView] = useState<'chats' | 'search' | 'requests'>('chats');
   const [selectedChatRoom, setSelectedChatRoom] = useState<ChatRoom | null>(null);
+  const isMobile = useIsMobile();
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 w-96 h-[600px]">
-      <Card className="h-full bg-white shadow-xl border-2 border-purple-200 flex flex-col">
+    <div className={`fixed z-50 ${
+      isMobile 
+        ? 'inset-0 p-4' 
+        : 'bottom-4 right-4 w-96 h-[600px]'
+    }`}>
+      <Card className={`h-full bg-white shadow-xl border-2 border-purple-200 flex flex-col ${
+        isMobile ? 'rounded-lg' : ''
+      }`}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center space-x-2">

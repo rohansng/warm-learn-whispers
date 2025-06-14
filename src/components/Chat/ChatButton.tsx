@@ -5,6 +5,7 @@ import { MessageCircle, Users } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { getChatRequests } from '@/utils/chatService';
 import { supabase } from "@/integrations/supabase/client";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ChatButtonProps {
   onClick: () => void;
@@ -13,6 +14,7 @@ interface ChatButtonProps {
 
 const ChatButton: React.FC<ChatButtonProps> = ({ onClick, isOpen }) => {
   const [unreadRequests, setUnreadRequests] = useState(0);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     loadUnreadRequests();
@@ -46,16 +48,24 @@ const ChatButton: React.FC<ChatButtonProps> = ({ onClick, isOpen }) => {
   if (isOpen) return null;
 
   return (
-    <div className="fixed bottom-20 right-4 z-40">
+    <div className={`fixed z-40 ${
+      isMobile 
+        ? 'bottom-4 right-4' 
+        : 'bottom-20 right-4'
+    }`}>
       <Button
         onClick={onClick}
-        className="relative rounded-full w-14 h-14 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg"
+        className={`relative rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 shadow-lg ${
+          isMobile ? 'w-12 h-12' : 'w-14 h-14'
+        }`}
       >
-        <MessageCircle className="w-6 h-6" />
+        <MessageCircle className={`${isMobile ? 'w-5 h-5' : 'w-6 h-6'}`} />
         {unreadRequests > 0 && (
           <Badge 
             variant="destructive" 
-            className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0 flex items-center justify-center text-xs"
+            className={`absolute -top-2 -right-2 rounded-full p-0 flex items-center justify-center text-xs ${
+              isMobile ? 'w-5 h-5' : 'w-6 h-6'
+            }`}
           >
             {unreadRequests}
           </Badge>
