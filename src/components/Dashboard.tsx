@@ -97,11 +97,9 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout, isGuest
     }
   };
 
-  const handleEntryAdded = (newEntry: TILEntry) => {
-    setEntries(prev => [newEntry, ...prev]);
-    if (userProfile) {
-      setUserProfile(prev => prev ? { ...prev, totalEntries: prev.totalEntries + 1 } : null);
-    }
+  const handleEntryAdded = () => {
+    // Reload entries after a new one is added
+    loadUserData();
   };
 
   const handleEntryUpdate = (updatedEntry: TILEntry) => {
