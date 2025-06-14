@@ -89,6 +89,7 @@ const Index = () => {
   }, [toast]);
 
   const handleAuthSuccess = (authenticatedUser: User) => {
+    console.log('Auth success:', authenticatedUser);
     setUser(authenticatedUser);
     setGuestUser(null); // Clear guest state
     localStorage.removeItem('guestUser'); // Clear guest storage
@@ -96,6 +97,7 @@ const Index = () => {
   };
 
   const handleGuestSuccess = (guestUserData: AppUser) => {
+    console.log('Guest success:', guestUserData);
     setGuestUser(guestUserData);
     setUser(null); // Clear auth state
     setLoading(false);
@@ -150,15 +152,12 @@ const Index = () => {
 
   if (!user && !guestUser) {
     return (
-      <div className="min-h-screen bg-gradient-warm font-poppins flex flex-col">
-        <div className="flex-1">
-          <Auth 
-            onAuthSuccess={handleAuthSuccess}
-            onGuestSuccess={handleGuestSuccess}
-          />
-        </div>
-        <Footer />
-      </div>
+      <>
+        <Auth 
+          onAuthSuccess={handleAuthSuccess}
+          onGuestSuccess={handleGuestSuccess}
+        />
+      </>
     );
   }
 
