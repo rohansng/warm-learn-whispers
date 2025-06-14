@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
-import { TILEntry, User } from '../types';
+import { TILEntry, User as AppUser } from '../types';
+import { User } from '@supabase/supabase-js';
 import { 
   getProfileByUsername, 
   createProfile, 
@@ -19,12 +20,13 @@ import UserChat from './UserChat';
 
 interface DashboardProps {
   username: string;
+  user: User;
   onLogout: () => void;
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
+const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
   const [entries, setEntries] = useState<TILEntry[]>([]);
-  const [user, setUser] = useState<User | null>(null);
+  const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [randomMemory, setRandomMemory] = useState<TILEntry | null>(null);
   const [showAddEntry, setShowAddEntry] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -52,65 +54,102 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [username]);
+  }, [username, user]);
 
   const loadUserData = async () => {
     setLoading(true);
     try {
-      console.log('Loading user data for:', username);
+      console.log('Loading user data for:', username, 'User ID:', user.id);
       
-      // Get or create user profile
-      let profile = await getProfileByUsername(username);
-      console.log('Profile found:', profile);
-      
-      if (!profile) {
+      // Get or create user profile using the authenticated user's ID
+      let profile = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (profile.error && profile.error.code === 'PGRST116') {
+        // Profile doesn't exist, create one
         console.log('Creating new profile for:', username);
-        profile = await createProfile(username);
-        
-        if (!profile) {
-          console.error('Failed to create profile for:', username);
-          // Still show the interface, but with limited functionality
-          setUser({
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert([{
+            id: user.id, // Use the authenticated user's ID
             username: username,
-            totalEntries: 0,
-            lastVisit: undefined
-          });
+            email: user.email || '',
+            total_entries: 0,
+            last_visit: new Date().toISOString()
+          }])
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Failed to create profile:', createError);
           setLoading(false);
           return;
         }
+        profile.data = newProfile;
       }
 
-      // Update last visit and get notes
-      const updatedProfile = await updateProfile(profile.id, {
-        last_visit: new Date().toISOString()
-      });
+      if (profile.error) {
+        console.error('Error fetching profile:', profile.error);
+        setLoading(false);
+        return;
+      }
 
-      const userEntries = await getNotesByUserId(profile.id);
-      console.log('User entries:', userEntries);
-      setEntries(userEntries.map(entry => ({ ...entry, username })));
+      // Update last visit
+      await supabase
+        .from('profiles')
+        .update({ last_visit: new Date().toISOString() })
+        .eq('id', user.id);
+
+      // Get user's notes
+      const { data: userEntries, error: notesError } = await supabase
+        .from('notes')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+
+      if (notesError) {
+        console.error('Error fetching notes:', notesError);
+        setLoading(false);
+        return;
+      }
+
+      const formattedEntries = (userEntries || []).map(note => ({
+        id: note.id,
+        username: username,
+        content: note.content,
+        tags: note.tags || [],
+        date: note.date,
+        emoji: note.emoji || '📚',
+        createdAt: new Date(note.created_at)
+      }));
+
+      setEntries(formattedEntries);
 
       // Update total entries count
-      await updateProfile(profile.id, {
-        total_entries: userEntries.length
-      });
+      await supabase
+        .from('profiles')
+        .update({ total_entries: formattedEntries.length })
+        .eq('id', user.id);
 
-      setUser({
-        username: profile.username,
-        totalEntries: userEntries.length,
-        lastVisit: profile.last_visit ? new Date(profile.last_visit) : undefined
+      setAppUser({
+        username: profile.data.username,
+        totalEntries: formattedEntries.length,
+        lastVisit: profile.data.last_visit ? new Date(profile.data.last_visit) : undefined
       });
 
       // Get random memory and check if should show add entry
-      const memory = await getRandomPastEntryFromDB(profile.id);
+      const memory = await getRandomPastEntryFromDB(user.id);
       setRandomMemory(memory ? { ...memory, username } : null);
 
-      const hasToday = await hasEntryForTodayInDB(profile.id);
+      const hasToday = await hasEntryForTodayInDB(user.id);
       console.log('Has entry for today:', hasToday);
       setShowAddEntry(!hasToday);
     } catch (error) {
       console.error('Error loading user data:', error);
-      // If there's an error, still show the add entry card and basic user info
-      setUser({
+      setAppUser({
         username: username,
         totalEntries: 0,
         lastVisit: undefined
@@ -139,7 +178,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
 
   return (
     <div className="min-h-screen bg-gradient-warm font-poppins">
-      <Header user={user} onLogout={onLogout} />
+      <Header user={appUser} onLogout={onLogout} />
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-8">
@@ -155,7 +194,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
               }
             </p>
             <p className="text-sm text-blue-600 mt-2">
-              ✨ Your notes now sync across all devices!
+              ✨ Your notes are securely stored and synced!
             </p>
           </div>
 
@@ -169,7 +208,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
           {/* Add entry card */}
           {showAddEntry && (
             <div className="animate-scale-in">
-              <AddEntryCard username={username} onEntryAdded={handleEntryAdded} />
+              <AddEntryCard username={username} userId={user.id} onEntryAdded={handleEntryAdded} />
             </div>
           )}
 

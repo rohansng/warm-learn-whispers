@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { TILEntry, User } from '../types';
+import { TILEntry } from '../types';
 
 export const getProfileByUsername = async (username: string) => {
   const { data, error } = await supabase
@@ -17,13 +17,13 @@ export const getProfileByUsername = async (username: string) => {
   return data;
 };
 
-export const createProfile = async (username: string): Promise<any> => {
+export const createProfile = async (userId: string, username: string, email: string): Promise<any> => {
   const { data, error } = await supabase
     .from('profiles')
     .insert([{
-      id: crypto.randomUUID(),
+      id: userId,
       username,
-      email: '',
+      email: email || '',
       total_entries: 0,
       last_visit: new Date().toISOString()
     }])
