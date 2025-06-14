@@ -1,14 +1,27 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { User } from '../types';
+import { User as AuthUser } from '@supabase/supabase-js';
+import UserProfile from './UserProfile';
+import { Settings, LogOut } from 'lucide-react';
 
 interface HeaderProps {
   user: User | null;
+  authUser?: AuthUser;
   onLogout: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ user, authUser, onLogout }) => {
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const handleProfileUpdate = (newUsername: string) => {
+    // Close the dialog after successful update
+    setIsProfileOpen(false);
+    // You could also trigger a refresh of user data here if needed
+  };
+
   return (
     <header className="bg-white/80 backdrop-blur-sm border-b border-lavender-100 sticky top-0 z-10">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
@@ -24,7 +37,7 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
           </div>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-3">
           {user && (
             <div className="text-right hidden sm:block">
               <p className="text-sm font-medium text-gray-800">@{user.username}</p>
@@ -35,12 +48,36 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
               )}
             </div>
           )}
+          
+          {authUser && (
+            <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-lavender-300 text-lavender-700 hover:bg-lavender-50"
+                >
+                  <Settings className="w-4 h-4 mr-2" />
+                  Profile
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="p-0 border-0 bg-transparent shadow-none">
+                <UserProfile 
+                  user={authUser} 
+                  onProfileUpdate={handleProfileUpdate}
+                />
+              </DialogContent>
+            </Dialog>
+          )}
+          
           <Button
             onClick={onLogout}
             variant="outline"
-            className="border-lavender-300 text-lavender-700 hover:bg-lavender-50"
+            size="sm"
+            className="border-red-300 text-red-700 hover:bg-red-50"
           >
-            Switch User
+            <LogOut className="w-4 h-4 mr-2" />
+            Sign Out
           </Button>
         </div>
       </div>

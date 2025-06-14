@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { TILEntry } from '../types';
 
@@ -7,7 +6,7 @@ export const getProfileByUsername = async (username: string) => {
     .from('profiles')
     .select('*')
     .eq('username', username)
-    .single();
+    .maybeSingle();
   
   if (error && error.code !== 'PGRST116') {
     console.error('Error fetching profile:', error);
@@ -18,9 +17,17 @@ export const getProfileByUsername = async (username: string) => {
 };
 
 export const createProfile = async (userId: string, username: string, email: string): Promise<any> => {
+  // Check if profile already exists
+  const existingProfile = await getProfileByUsername(username);
+  if (existingProfile && existingProfile.id !== userId) {
+    // Username is taken, generate a unique one
+    const timestamp = Date.now().toString().slice(-4);
+    username = `${username}${timestamp}`;
+  }
+
   const { data, error } = await supabase
     .from('profiles')
-    .insert([{
+    .upsert([{
       id: userId,
       username,
       email: email || '',
@@ -31,7 +38,7 @@ export const createProfile = async (userId: string, username: string, email: str
     .single();
 
   if (error) {
-    console.error('Error creating profile:', error);
+    console.error('Error creating/updating profile:', error);
     return null;
   }
 
