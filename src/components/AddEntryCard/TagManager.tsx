@@ -90,13 +90,13 @@ const TagManager: React.FC<TagManagerProps> = ({
               <Badge
                 key={index}
                 variant="secondary"
-                className="bg-lavender-100 text-lavender-700 hover:bg-lavender-200 px-3 py-1"
+                className="bg-purple-100 text-purple-800 border border-purple-200 hover:bg-purple-200 px-3 py-1 flex items-center gap-1"
               >
                 {getTagEmoji(tag)} {tag}
                 <button
                   type="button"
                   onClick={() => removeTag(tag)}
-                  className="ml-2 hover:text-lavender-900"
+                  className="ml-1 hover:text-purple-900 transition-colors"
                   disabled={isSubmitting}
                 >
                   <X className="h-3 w-3" />
