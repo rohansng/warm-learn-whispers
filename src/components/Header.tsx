@@ -10,17 +10,15 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
   return (
-    <header className="glass backdrop-blur-md border-b border-crimson-500/20 sticky top-0 z-50">
-      <div className="container mx-auto px-4 py-6 flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="text-4xl animate-bounce-gentle">📚</div>
+    <header className="bg-white/80 backdrop-blur-sm border-b border-lavender-100 sticky top-0 z-10">
+      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <span className="text-2xl">📚</span>
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-white to-crimson-300 bg-clip-text text-transparent">
-              Today I Learned
-            </h1>
+            <h1 className="text-xl font-semibold text-gray-800">Today I Learned</h1>
             {user && (
-              <p className="text-sm text-gray-300 font-medium">
-                <span className="text-cherry-400">{user.totalEntries}</span> learning moments captured
+              <p className="text-sm text-gray-600">
+                {user.totalEntries} learning moments captured
               </p>
             )}
           </div>
@@ -28,10 +26,10 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
         
         <div className="flex items-center space-x-4">
           {user && (
-            <div className="text-right hidden sm:block glass-card px-4 py-2 rounded-lg">
-              <p className="text-sm font-semibold text-white">@{user.username}</p>
+            <div className="text-right hidden sm:block">
+              <p className="text-sm font-medium text-gray-800">@{user.username}</p>
               {user.lastVisit && (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-500">
                   Last visit: {new Date(user.lastVisit).toLocaleDateString()}
                 </p>
               )}
@@ -39,7 +37,8 @@ const Header: React.FC<HeaderProps> = ({ user, onLogout }) => {
           )}
           <Button
             onClick={onLogout}
-            className="bg-gradient-button hover:glow-red-intense text-white font-semibold px-6 py-2 rounded-lg transition-all duration-300 hover:scale-105 border border-crimson-500/30"
+            variant="outline"
+            className="border-lavender-300 text-lavender-700 hover:bg-lavender-50"
           >
             Switch User
           </Button>

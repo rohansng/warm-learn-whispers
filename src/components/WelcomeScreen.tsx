@@ -23,31 +23,24 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onUsernameSubmit }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero pulse-bg flex items-center justify-center p-4 font-poppins relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-10 left-20 w-40 h-40 bg-gradient-to-r from-crimson-500 to-cherry-500 rounded-full blur-3xl animate-pulse-glow"></div>
-        <div className="absolute bottom-20 right-20 w-32 h-32 bg-gradient-to-l from-scarlet-500 to-crimson-600 rounded-full blur-3xl animate-pulse-glow" style={{animationDelay: '2s'}}></div>
-        <div className="absolute top-1/2 left-1/2 w-20 h-20 bg-cherry-400 rounded-full blur-2xl animate-pulse-glow" style={{animationDelay: '1s'}}></div>
-      </div>
-
-      <div className="max-w-lg w-full animate-fade-in relative z-10">
-        <div className="text-center mb-10">
-          <h1 className="text-7xl font-bold mb-6 bg-gradient-to-r from-crimson-400 via-cherry-500 to-scarlet-400 bg-clip-text text-transparent animate-bounce-gentle">
+    <div className="min-h-screen bg-gradient-warm flex items-center justify-center p-4 font-poppins">
+      <div className="max-w-md w-full animate-fade-in">
+        <div className="text-center mb-8">
+          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-lavender-600 via-blush-500 to-mint-500 bg-clip-text text-transparent animate-bounce-gentle">
             📚✨
           </h1>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight">
-            Today I <span className="bg-gradient-to-r from-crimson-400 to-cherry-500 bg-clip-text text-transparent">Learned</span>
+          <h2 className="text-3xl font-semibold text-gray-800 mb-2">
+            Today I Learned
           </h2>
-          <p className="text-gray-300 text-xl leading-relaxed">
-            Your <span className="text-cherry-400 font-semibold">daily learning journey</span> starts here
+          <p className="text-gray-600 text-lg">
+            Your daily learning journey starts here
           </p>
         </div>
 
-        <Card className="glass-card p-8 shadow-2xl border-0 animate-scale-in glow-red">
-          <form onSubmit={handleSubmit} className="space-y-8">
+        <Card className="p-8 bg-white/80 backdrop-blur-sm shadow-xl border-0 animate-scale-in">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-semibold text-gray-300 mb-3">
+              <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                 Enter your unique username
               </label>
               <Input
@@ -56,7 +49,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onUsernameSubmit }) => {
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="Choose a memorable username..."
-                className="text-lg py-4 px-6 bg-dark-800/50 border-2 border-crimson-500/30 focus:border-cherry-500 rounded-xl transition-all duration-300 text-white placeholder-gray-400 hover-glow"
+                className="text-lg py-3 px-4 border-2 border-lavender-200 focus:border-lavender-400 rounded-xl transition-all duration-300"
                 disabled={isSubmitting}
                 autoFocus
               />
@@ -65,12 +58,12 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onUsernameSubmit }) => {
             <Button
               type="submit"
               disabled={!username.trim() || isSubmitting}
-              className="w-full bg-gradient-button hover:glow-red-intense text-white font-bold py-4 px-8 rounded-xl shadow-xl transform transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed text-lg"
+              className="w-full bg-gradient-to-r from-lavender-500 to-blush-500 hover:from-lavender-600 hover:to-blush-600 text-white font-semibold py-3 px-6 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <div className="flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent mr-3"></div>
-                  Igniting your journey...
+                  <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></div>
+                  Loading your journey...
                 </div>
               ) : (
                 "Start Learning Journey 🚀"
@@ -78,13 +71,13 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onUsernameSubmit }) => {
             </Button>
           </form>
 
-          <div className="mt-8 text-center text-sm text-gray-400">
+          <div className="mt-6 text-center text-sm text-gray-500">
             <p>✨ No signup required - just remember your username!</p>
           </div>
         </Card>
 
-        <div className="mt-10 text-center">
-          <p className="text-gray-400 text-lg">
+        <div className="mt-8 text-center">
+          <p className="text-gray-600 text-sm">
             Track daily learnings • Add meaningful tags • Build your knowledge timeline
           </p>
         </div>
