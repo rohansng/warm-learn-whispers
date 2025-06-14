@@ -5,14 +5,32 @@ import { User } from '@supabase/supabase-js';
 import Auth from './Auth';
 import Dashboard from '../components/Dashboard';
 import { useToast } from '@/hooks/use-toast';
+import { User as AppUser } from '../types';
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
+  const [guestUser, setGuestUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
+
+    // Check for existing guest session
+    const storedGuestUser = localStorage.getItem('guestUser');
+    if (storedGuestUser) {
+      try {
+        const parsedGuestUser = JSON.parse(storedGuestUser);
+        if (mounted) {
+          setGuestUser(parsedGuestUser);
+          setLoading(false);
+          return; // Skip auth check if guest user exists
+        }
+      } catch (error) {
+        console.error('Failed to parse guest user:', error);
+        localStorage.removeItem('guestUser');
+      }
+    }
 
     // Function to handle session changes
     const handleSession = (session: any) => {
@@ -48,6 +66,9 @@ const Index = () => {
           });
         }
       } else if (event === 'SIGNED_IN') {
+        // Clear guest session when user signs in
+        localStorage.removeItem('guestUser');
+        setGuestUser(null);
         handleSession(session);
         if (mounted && session?.user) {
           toast({
@@ -68,20 +89,39 @@ const Index = () => {
 
   const handleAuthSuccess = (authenticatedUser: User) => {
     setUser(authenticatedUser);
+    setGuestUser(null); // Clear guest state
+    localStorage.removeItem('guestUser'); // Clear guest storage
+    setLoading(false);
+  };
+
+  const handleGuestSuccess = (guestUserData: AppUser) => {
+    setGuestUser(guestUserData);
+    setUser(null); // Clear auth state
     setLoading(false);
   };
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
+      if (user) {
+        // Regular user logout
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Logout Error",
+            description: error.message,
+          });
+        } else {
+          setUser(null);
+        }
+      } else if (guestUser) {
+        // Guest logout
+        localStorage.removeItem('guestUser');
+        setGuestUser(null);
         toast({
-          variant: "destructive",
-          title: "Logout Error",
-          description: error.message,
+          title: "Logged Out",
+          description: "You've been logged out. Your data is saved and can be accessed anytime with your username.",
         });
-      } else {
-        setUser(null);
       }
     } catch (error) {
       console.error('Logout error:', error);
@@ -104,14 +144,37 @@ const Index = () => {
     );
   }
 
-  if (!user) {
-    return <Auth onAuthSuccess={handleAuthSuccess} />;
+  if (!user && !guestUser) {
+    return (
+      <Auth 
+        onAuthSuccess={handleAuthSuccess}
+        onGuestSuccess={handleGuestSuccess}
+      />
+    );
   }
 
-  // Get username from user metadata or email
-  const username = user.user_metadata?.username || user.email?.split('@')[0] || 'User';
+  // Determine username for display
+  let username = 'User';
+  let currentUser = null;
 
-  return <Dashboard username={username} user={user} onLogout={handleLogout} />;
+  if (user) {
+    // Authenticated user
+    username = user.user_metadata?.username || user.email?.split('@')[0] || 'User';
+    currentUser = user;
+  } else if (guestUser) {
+    // Guest user
+    username = guestUser.username;
+    currentUser = guestUser;
+  }
+
+  return (
+    <Dashboard 
+      username={username} 
+      user={currentUser} 
+      onLogout={handleLogout}
+      isGuest={!!guestUser}
+    />
+  );
 };
 
 export default Index;

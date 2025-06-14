@@ -2,24 +2,24 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { User } from '../types';
 import { User as AuthUser } from '@supabase/supabase-js';
 import UserProfile from './UserProfile';
-import { Settings, LogOut } from 'lucide-react';
+import { Settings, LogOut, UserCheck } from 'lucide-react';
 
 interface HeaderProps {
   user: User | null;
   authUser?: AuthUser;
   onLogout: () => void;
+  isGuest?: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ user, authUser, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ user, authUser, onLogout, isGuest = false }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const handleProfileUpdate = (newUsername: string) => {
-    // Close the dialog after successful update
     setIsProfileOpen(false);
-    // You could also trigger a refresh of user data here if needed
   };
 
   return (
@@ -40,7 +40,15 @@ const Header: React.FC<HeaderProps> = ({ user, authUser, onLogout }) => {
         <div className="flex items-center space-x-3">
           {user && (
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium text-gray-800">@{user.username}</p>
+              <div className="flex items-center space-x-2">
+                <p className="text-sm font-medium text-gray-800">@{user.username}</p>
+                {isGuest && (
+                  <Badge variant="outline" className="border-mint-300 text-mint-700 text-xs">
+                    <UserCheck className="w-3 h-3 mr-1" />
+                    Guest
+                  </Badge>
+                )}
+              </div>
               {user.lastVisit && (
                 <p className="text-xs text-gray-500">
                   Last visit: {new Date(user.lastVisit).toLocaleDateString()}
@@ -49,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({ user, authUser, onLogout }) => {
             </div>
           )}
           
-          {authUser && (
+          {authUser && !isGuest && (
             <Dialog open={isProfileOpen} onOpenChange={setIsProfileOpen}>
               <DialogTrigger asChild>
                 <Button
@@ -77,7 +85,7 @@ const Header: React.FC<HeaderProps> = ({ user, authUser, onLogout }) => {
             className="border-red-300 text-red-700 hover:bg-red-50"
           >
             <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
+            {isGuest ? 'Exit Guest' : 'Sign Out'}
           </Button>
         </div>
       </div>

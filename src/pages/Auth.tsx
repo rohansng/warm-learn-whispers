@@ -7,13 +7,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useToast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
 import { Eye, EyeOff } from 'lucide-react';
+import GuestAuth from '../components/GuestAuth';
 
 interface AuthProps {
   onAuthSuccess: (user: User) => void;
+  onGuestSuccess?: (user: any) => void;
 }
 
-const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
+const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onGuestSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
+  const [showGuestAuth, setShowGuestAuth] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
@@ -174,12 +177,23 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
   };
 
   const handleContinueAsGuest = () => {
-    // For now, we'll just show a message - you can implement guest mode later
-    toast({
-      title: "Guest Mode",
-      description: "Guest mode coming soon! Please create an account to get started.",
-    });
+    setShowGuestAuth(true);
   };
+
+  const handleGuestSuccess = (user: any) => {
+    if (onGuestSuccess) {
+      onGuestSuccess(user);
+    }
+  };
+
+  if (showGuestAuth) {
+    return (
+      <GuestAuth
+        onGuestSuccess={handleGuestSuccess}
+        onBack={() => setShowGuestAuth(false)}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-warm flex items-center justify-center p-4 font-poppins">
@@ -286,10 +300,10 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
               type="button"
               variant="outline"
               onClick={handleContinueAsGuest}
-              className="w-full border-2 border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl py-3"
+              className="w-full border-2 border-mint-300 text-mint-700 hover:bg-mint-50 rounded-xl py-3"
               disabled={loading}
             >
-              Continue as Guest
+              Continue as Guest 👤
             </Button>
           </div>
           
