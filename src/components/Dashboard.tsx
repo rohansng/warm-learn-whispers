@@ -55,17 +55,17 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-dark font-poppins">
+    <div className="min-h-screen bg-gradient-warm font-poppins">
       <Header user={user} onLogout={onLogout} />
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-8">
           {/* Welcome back message */}
           <div className="text-center animate-fade-in">
-            <h1 className="text-3xl font-bold text-white mb-2">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">
               Welcome back, {username}! 👋
             </h1>
-            <p className="text-gray-300">
+            <p className="text-gray-600">
               {entries.length === 0 
                 ? "Ready to start your learning journey?" 
                 : `You've captured ${entries.length} amazing learning moment${entries.length === 1 ? '' : 's'}!`
