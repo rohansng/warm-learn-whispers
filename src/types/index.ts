@@ -14,7 +14,7 @@ export interface User {
   username: string;
   email: string;
   totalEntries: number;
-  lastVisit: string;
+  lastVisit: string; // Keep as string to match database
 }
 
 export interface AuthUser {

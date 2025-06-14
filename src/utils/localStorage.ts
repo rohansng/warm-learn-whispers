@@ -39,9 +39,11 @@ export const getUser = async (username: string): Promise<User | null> => {
     const profile = await getProfileByUsername(username);
     if (profile) {
       return {
+        id: profile.id,
         username: profile.username,
+        email: profile.email,
         totalEntries: profile.total_entries || 0,
-        lastVisit: profile.last_visit ? new Date(profile.last_visit) : undefined
+        lastVisit: profile.last_visit || new Date().toISOString()
       };
     }
   } catch (error) {
@@ -54,12 +56,12 @@ export const saveUser = async (user: User): Promise<void> => {
   try {
     let profile = await getProfileByUsername(user.username);
     if (!profile) {
-      profile = await createProfile('', user.username, '');
+      profile = await createProfile(user.id, user.username, user.email);
     }
     if (profile) {
       await updateProfile(profile.id, {
         total_entries: user.totalEntries,
-        last_visit: user.lastVisit?.toISOString()
+        last_visit: user.lastVisit
       });
     }
   } catch (error) {
