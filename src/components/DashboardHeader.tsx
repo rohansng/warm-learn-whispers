@@ -9,7 +9,6 @@ import { LogOut, Settings } from 'lucide-react';
 interface Profile {
   username: string;
   email: string;
-  avatar_url?: string;
 }
 
 interface DashboardHeaderProps {
@@ -31,7 +30,7 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ noteCount, streak }) 
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('username, email, avatar_url')
+        .select('username, email')
         .eq('id', user?.id)
         .single();
 
@@ -71,7 +70,6 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ noteCount, streak }) 
             {/* User Info */}
             <div className="flex items-center space-x-3">
               <Avatar className="border-2 border-red-500/30">
-                <AvatarImage src={profile?.avatar_url} />
                 <AvatarFallback className="bg-red-600 text-white">
                   {profile?.username?.charAt(0).toUpperCase() || 'U'}
                 </AvatarFallback>
