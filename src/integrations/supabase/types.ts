@@ -9,6 +9,110 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      chat_requests: {
+        Row: {
+          created_at: string
+          id: string
+          message: string | null
+          receiver_id: string
+          sender_id: string
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          receiver_id: string
+          sender_id: string
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string | null
+          receiver_id?: string
+          sender_id?: string
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_rooms: {
+        Row: {
+          created_at: string
+          id: string
+          last_message_at: string | null
+          participant_1: string
+          participant_2: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          participant_1: string
+          participant_2: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message_at?: string | null
+          participant_1?: string
+          participant_2?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          chat_room_id: string
+          content: string
+          created_at: string
+          id: string
+          is_deleted: boolean | null
+          is_read: boolean | null
+          message_type: string | null
+          metadata: Json | null
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          chat_room_id: string
+          content: string
+          created_at?: string
+          id?: string
+          is_deleted?: boolean | null
+          is_read?: boolean | null
+          message_type?: string | null
+          metadata?: Json | null
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          chat_room_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_deleted?: boolean | null
+          is_read?: boolean | null
+          message_type?: string | null
+          metadata?: Json | null
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_chat_room_id_fkey"
+            columns: ["chat_room_id"]
+            isOneToOne: false
+            referencedRelation: "chat_rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes: {
         Row: {
           content: string
@@ -77,6 +181,45 @@ export type Database = {
           total_entries?: number | null
           updated_at?: string
           username?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          allow_chat_requests: boolean | null
+          created_at: string
+          id: string
+          push_notifications_chat: boolean | null
+          push_notifications_notes: boolean | null
+          show_last_seen: boolean | null
+          show_read_receipts: boolean | null
+          show_typing_indicator: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          allow_chat_requests?: boolean | null
+          created_at?: string
+          id?: string
+          push_notifications_chat?: boolean | null
+          push_notifications_notes?: boolean | null
+          show_last_seen?: boolean | null
+          show_read_receipts?: boolean | null
+          show_typing_indicator?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          allow_chat_requests?: boolean | null
+          created_at?: string
+          id?: string
+          push_notifications_chat?: boolean | null
+          push_notifications_notes?: boolean | null
+          show_last_seen?: boolean | null
+          show_read_receipts?: boolean | null
+          show_typing_indicator?: boolean | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

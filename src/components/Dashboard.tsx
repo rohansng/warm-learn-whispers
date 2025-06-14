@@ -13,7 +13,7 @@ import AddEntryCard from './AddEntryCard';
 import TimelineView from './TimelineView';
 import RandomMemoryCard from './RandomMemoryCard';
 import Footer from './Footer';
-import UserChat from './UserChat';
+import ChatSystem from './Chat';
 
 interface DashboardProps {
   username: string;
@@ -221,8 +221,8 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
       
       <Footer />
       
-      {/* Chat Component */}
-      <UserChat username={appUser?.username || username} />
+      {/* Chat System - replaces the old UserChat */}
+      <ChatSystem userId={user.id} />
     </div>
   );
 };
