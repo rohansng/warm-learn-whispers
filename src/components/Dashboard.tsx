@@ -1,7 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { TILEntry, User, AuthUser } from '../types';
+import { TILEntry, User } from '../types';
+import { User as SupabaseUser } from '@supabase/supabase-js';
 import Header from './Header';
 import TILForm from './TILForm';
 import TILList from './TILList';
@@ -12,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface DashboardProps {
   username: string;
-  user: AuthUser;
+  user: SupabaseUser;
   onLogout: () => void;
 }
 
