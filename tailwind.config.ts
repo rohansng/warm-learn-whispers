@@ -56,47 +56,36 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Custom TIL colors
-				lavender: {
-					50: '#f7f5ff',
-					100: '#eee9fe',
-					200: '#e0d6fe',
-					300: '#cab8fc',
-					400: '#b08df8',
-					500: '#9966f0',
-					600: '#8b44e5',
-					700: '#7a33ca',
-					800: '#672ba6',
-					900: '#562687',
+				// Red and Black Theme Colors
+				crimson: {
+					50: '#fef2f2',
+					100: '#fee2e2',
+					200: '#fecaca',
+					300: '#fca5a5',
+					400: '#f87171',
+					500: '#ef4444',
+					600: '#dc2626',
+					700: '#b91c1c',
+					800: '#991b1b',
+					900: '#7f1d1d',
 				},
-				blush: {
-					50: '#fef7f7',
-					100: '#fdeef0',
-					200: '#fbe3e6',
-					300: '#f7cdd3',
-					400: '#f1a8b4',
-					500: '#e87a8a',
-					600: '#da5a6d',
-					700: '#c23c52',
-					800: '#a23247',
-					900: '#892e42',
-				},
-				mint: {
-					50: '#f0fdfa',
-					100: '#ccfbf1',
-					200: '#99f6e4',
-					300: '#5eead4',
-					400: '#2dd4bf',
-					500: '#14b8a6',
-					600: '#0d9488',
-					700: '#0f766e',
-					800: '#115e59',
-					900: '#134e4a',
+				slate: {
+					50: '#f8fafc',
+					100: '#f1f5f9',
+					200: '#e2e8f0',
+					300: '#cbd5e1',
+					400: '#94a3b8',
+					500: '#64748b',
+					600: '#475569',
+					700: '#334155',
+					800: '#1e293b',
+					900: '#0f172a',
 				},
 			},
 			backgroundImage: {
-				'gradient-warm': 'linear-gradient(135deg, #f7f5ff 0%, #fef7f7 50%, #f0fdfa 100%)',
-				'gradient-card': 'linear-gradient(135deg, rgba(249, 168, 212, 0.1) 0%, rgba(196, 181, 253, 0.1) 50%, rgba(167, 243, 208, 0.1) 100%)',
+				'gradient-dark': 'linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0f0f0f 100%)',
+				'gradient-red': 'linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%)',
+				'gradient-card': 'linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(15, 15, 15, 0.9) 100%)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -157,6 +146,14 @@ export default {
 						opacity: '1',
 						transform: 'scale(1)'
 					}
+				},
+				'glow': {
+					'0%, 100%': {
+						boxShadow: '0 0 5px rgba(220, 38, 38, 0.5)'
+					},
+					'50%': {
+						boxShadow: '0 0 20px rgba(220, 38, 38, 0.8)'
+					}
 				}
 			},
 			animation: {
@@ -166,6 +163,7 @@ export default {
 				'fade-in-up': 'fade-in-up 0.8s ease-out',
 				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
 				'scale-in': 'scale-in 0.4s ease-out',
+				'glow': 'glow 2s ease-in-out infinite',
 			}
 		}
 	},
