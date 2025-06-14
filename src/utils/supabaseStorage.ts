@@ -21,6 +21,7 @@ export const createProfile = async (username: string): Promise<any> => {
   const { data, error } = await supabase
     .from('profiles')
     .insert([{
+      id: crypto.randomUUID(),
       username,
       email: '',
       total_entries: 0,
