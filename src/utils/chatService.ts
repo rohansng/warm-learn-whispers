@@ -121,8 +121,8 @@ export const getChatRooms = async () => {
     .from('chat_rooms')
     .select(`
       *,
-      participant1:participant_1(username, email, is_online, last_visit),
-      participant2:participant_2(username, email, is_online, last_visit)
+      participant1:participant_1(username, email, last_visit),
+      participant2:participant_2(username, email, last_visit)
     `)
     .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
     .order('last_message_at', { ascending: false });
@@ -204,8 +204,7 @@ export const updateUserPresence = async (isOnline: boolean) => {
   const { error } = await supabase
     .from('profiles')
     .update({ 
-      last_visit: new Date().toISOString(),
-      is_online: isOnline 
+      last_visit: new Date().toISOString()
     })
     .eq('id', user.id);
 
@@ -217,16 +216,24 @@ export const updateUserPresence = async (isOnline: boolean) => {
 export const getOnlineUsers = async (): Promise<OnlineUserProfile[]> => {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, username, email, is_online, last_visit');
+    .select('id, username, email, last_visit');
 
   if (error) {
     console.error('Error fetching online users:', error);
     return [];
   }
 
-  // Type the data explicitly and filter for online users
-  const profiles = (data || []) as OnlineUserProfile[];
-  return profiles.filter(user => user.is_online === true);
+  // Since we don't have is_online column yet, consider users online if last_visit was within 5 minutes
+  const now = new Date().getTime();
+  const fiveMinutesAgo = now - (5 * 60 * 1000);
+
+  return (data || []).map(user => ({
+    id: user.id,
+    username: user.username || 'Unknown',
+    email: user.email || '',
+    is_online: user.last_visit ? new Date(user.last_visit).getTime() > fiveMinutesAgo : false,
+    last_visit: user.last_visit || new Date().toISOString()
+  })).filter(user => user.is_online);
 };
 
 export const trackUserPresence = () => {
