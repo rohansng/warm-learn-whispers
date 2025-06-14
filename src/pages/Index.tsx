@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User } from '@supabase/supabase-js';
 import Auth from './Auth';
 import Dashboard from '../components/Dashboard';
+import Footer from '../components/Footer';
 import { useToast } from '@/hooks/use-toast';
 import { User as AppUser } from '../types';
 
@@ -135,21 +136,29 @@ const Index = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-warm font-poppins flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-bounce">📚</div>
-          <p className="text-gray-600">Loading your learning journey...</p>
+      <div className="min-h-screen bg-gradient-warm font-poppins">
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <div className="text-4xl mb-4 animate-bounce">📚</div>
+            <p className="text-gray-600">Loading your learning journey...</p>
+          </div>
         </div>
+        <Footer />
       </div>
     );
   }
 
   if (!user && !guestUser) {
     return (
-      <Auth 
-        onAuthSuccess={handleAuthSuccess}
-        onGuestSuccess={handleGuestSuccess}
-      />
+      <div className="min-h-screen bg-gradient-warm font-poppins flex flex-col">
+        <div className="flex-1">
+          <Auth 
+            onAuthSuccess={handleAuthSuccess}
+            onGuestSuccess={handleGuestSuccess}
+          />
+        </div>
+        <Footer />
+      </div>
     );
   }
 
@@ -168,12 +177,17 @@ const Index = () => {
   }
 
   return (
-    <Dashboard 
-      username={username} 
-      user={currentUser} 
-      onLogout={handleLogout}
-      isGuest={!!guestUser}
-    />
+    <div className="min-h-screen bg-gradient-warm font-poppins flex flex-col">
+      <div className="flex-1">
+        <Dashboard 
+          username={username} 
+          user={currentUser} 
+          onLogout={handleLogout}
+          isGuest={!!guestUser}
+        />
+      </div>
+      <Footer />
+    </div>
   );
 };
 
