@@ -8,14 +8,14 @@ const Footer: React.FC = () => {
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <div className="animate-fade-in-up">
           <h3 className="text-xl font-semibold text-gray-800 mb-6 text-center font-poppins">
-            A Project by Rohan Singh
+            ✨ A Project by Rohan Singh
           </h3>
           
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8">
             {/* Profile Photo */}
             <div className="flex-shrink-0">
               <img
-                src="/lovable-uploads/8c6ab95a-3225-4ab7-9df4-a839019a130e.png"
+                src="/lovable-uploads/b7b3be69-dbc1-44bb-bfcf-ce520ea51354.png"
                 alt="Rohan Singh"
                 className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-white shadow-lg hover:scale-105 transition-transform duration-300"
               />
