@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ChatRoom, Message, ChatRequest, UserSettings } from "@/types/chat";
 
@@ -183,6 +182,67 @@ export const markMessagesAsRead = async (chatRoomId: string, userId: string) => 
   if (error) {
     console.error('Error marking messages as read:', error);
   }
+};
+
+export const updateUserPresence = async (isOnline: boolean) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ 
+      last_visit: new Date().toISOString(),
+      is_online: isOnline 
+    })
+    .eq('id', user.id);
+
+  if (error) {
+    console.error('Error updating user presence:', error);
+  }
+};
+
+export const getOnlineUsers = async () => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, username, email, is_online, last_visit')
+    .eq('is_online', true)
+    .order('username');
+
+  if (error) {
+    console.error('Error fetching online users:', error);
+    return [];
+  }
+
+  return data || [];
+};
+
+export const trackUserPresence = () => {
+  const channel = supabase.channel('user-presence');
+  
+  channel
+    .on('presence', { event: 'sync' }, () => {
+      console.log('Syncing presence state');
+    })
+    .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+      console.log('User joined:', key, newPresences);
+    })
+    .on('presence', { event: 'leave' }, ({ key, leftPresences }) => {
+      console.log('User left:', key, leftPresences);
+    })
+    .subscribe(async (status) => {
+      if (status === 'SUBSCRIBED') {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          await channel.track({
+            user_id: user.id,
+            online_at: new Date().toISOString(),
+          });
+          await updateUserPresence(true);
+        }
+      }
+    });
+
+  return channel;
 };
 
 export const getUserSettings = async () => {
