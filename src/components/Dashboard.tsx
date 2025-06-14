@@ -11,6 +11,7 @@ import {
   getRandomPastEntryFromDB
 } from '../utils/supabaseStorage';
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from '@/hooks/use-toast';
 import Header from './Header';
 import AddEntryCard from './AddEntryCard';
 import TimelineView from './TimelineView';
@@ -30,6 +31,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
   const [randomMemory, setRandomMemory] = useState<TILEntry | null>(null);
   const [showAddEntry, setShowAddEntry] = useState(true);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     loadUserData();
@@ -71,37 +73,67 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
       if (profile.error && profile.error.code === 'PGRST116') {
         // Profile doesn't exist, create one
         console.log('Creating new profile for:', username);
-        const { data: newProfile, error: createError } = await supabase
-          .from('profiles')
-          .insert([{
-            id: user.id, // Use the authenticated user's ID
-            username: username,
-            email: user.email || '',
-            total_entries: 0,
-            last_visit: new Date().toISOString()
-          }])
-          .select()
-          .single();
+        try {
+          const { data: newProfile, error: createError } = await supabase
+            .from('profiles')
+            .insert([{
+              id: user.id,
+              username: username,
+              email: user.email || '',
+              total_entries: 0,
+              last_visit: new Date().toISOString()
+            }])
+            .select()
+            .single();
 
-        if (createError) {
-          console.error('Failed to create profile:', createError);
+          if (createError) {
+            console.error('Failed to create profile:', createError);
+            // Handle the case where profile creation fails
+            toast({
+              variant: "destructive",
+              title: "Profile Creation Error",
+              description: "There was an issue creating your profile. Some features may not work properly.",
+            });
+            // Continue with a basic app user setup
+            setAppUser({
+              username: username,
+              totalEntries: 0,
+              lastVisit: undefined
+            });
+            setLoading(false);
+            return;
+          }
+          profile.data = newProfile;
+        } catch (createError) {
+          console.error('Profile creation exception:', createError);
+          setAppUser({
+            username: username,
+            totalEntries: 0,
+            lastVisit: undefined
+          });
           setLoading(false);
           return;
         }
-        profile.data = newProfile;
       }
 
-      if (profile.error) {
+      if (profile.error && profile.error.code !== 'PGRST116') {
         console.error('Error fetching profile:', profile.error);
+        setAppUser({
+          username: username,
+          totalEntries: 0,
+          lastVisit: undefined
+        });
         setLoading(false);
         return;
       }
 
       // Update last visit
-      await supabase
-        .from('profiles')
-        .update({ last_visit: new Date().toISOString() })
-        .eq('id', user.id);
+      if (profile.data) {
+        await supabase
+          .from('profiles')
+          .update({ last_visit: new Date().toISOString() })
+          .eq('id', user.id);
+      }
 
       // Get user's notes
       const { data: userEntries, error: notesError } = await supabase
@@ -112,32 +144,32 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
 
       if (notesError) {
         console.error('Error fetching notes:', notesError);
-        setLoading(false);
-        return;
+        setEntries([]);
+      } else {
+        const formattedEntries = (userEntries || []).map(note => ({
+          id: note.id,
+          username: username,
+          content: note.content,
+          tags: note.tags || [],
+          date: note.date,
+          emoji: note.emoji || '📚',
+          createdAt: new Date(note.created_at)
+        }));
+        setEntries(formattedEntries);
+
+        // Update total entries count
+        if (profile.data) {
+          await supabase
+            .from('profiles')
+            .update({ total_entries: formattedEntries.length })
+            .eq('id', user.id);
+        }
       }
 
-      const formattedEntries = (userEntries || []).map(note => ({
-        id: note.id,
-        username: username,
-        content: note.content,
-        tags: note.tags || [],
-        date: note.date,
-        emoji: note.emoji || '📚',
-        createdAt: new Date(note.created_at)
-      }));
-
-      setEntries(formattedEntries);
-
-      // Update total entries count
-      await supabase
-        .from('profiles')
-        .update({ total_entries: formattedEntries.length })
-        .eq('id', user.id);
-
       setAppUser({
-        username: profile.data.username,
-        totalEntries: formattedEntries.length,
-        lastVisit: profile.data.last_visit ? new Date(profile.data.last_visit) : undefined
+        username: profile.data?.username || username,
+        totalEntries: userEntries?.length || 0,
+        lastVisit: profile.data?.last_visit ? new Date(profile.data.last_visit) : undefined
       });
 
       // Get random memory and check if should show add entry
@@ -169,7 +201,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
     return (
       <div className="min-h-screen bg-gradient-warm font-poppins flex items-center justify-center">
         <div className="text-center">
-          <div className="text-4xl mb-4">📚</div>
+          <div className="text-4xl mb-4 animate-pulse">📚</div>
           <p className="text-gray-600">Loading your learning journey...</p>
         </div>
       </div>

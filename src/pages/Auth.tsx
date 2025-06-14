@@ -49,11 +49,25 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
         });
 
         if (error) {
-          toast({
-            variant: "destructive",
-            title: "Login Failed",
-            description: error.message,
-          });
+          if (error.message.includes('Invalid login credentials')) {
+            toast({
+              variant: "destructive",
+              title: "Login Failed",
+              description: "Invalid email or password. Please check your credentials.",
+            });
+          } else if (error.message.includes('Email not confirmed')) {
+            toast({
+              variant: "destructive",
+              title: "Email Not Confirmed",
+              description: "Please check your email and click the confirmation link before logging in.",
+            });
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Login Failed",
+              description: error.message,
+            });
+          }
         } else if (data.user) {
           toast({
             title: "Welcome back!",
@@ -75,19 +89,45 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
         });
 
         if (error) {
-          toast({
-            variant: "destructive",
-            title: "Signup Failed",
-            description: error.message,
-          });
-        } else {
-          toast({
-            title: "Account Created!",
-            description: "Please check your email to confirm your account.",
-          });
+          if (error.message.includes('User already registered')) {
+            toast({
+              variant: "destructive",
+              title: "Account Already Exists",
+              description: "An account with this email already exists. Please try logging in instead.",
+            });
+            setIsLogin(true);
+          } else if (error.message.includes('Password should be at least 6 characters')) {
+            toast({
+              variant: "destructive",
+              title: "Password Too Short",
+              description: "Password should be at least 6 characters long.",
+            });
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Signup Failed",
+              description: error.message,
+            });
+          }
+        } else if (data.user) {
+          if (data.user.email_confirmed_at) {
+            // User is immediately confirmed
+            toast({
+              title: "Account Created!",
+              description: "Welcome to Today I Learned! You're now logged in.",
+            });
+            onAuthSuccess(data.user);
+          } else {
+            // Email confirmation required
+            toast({
+              title: "Account Created!",
+              description: "Please check your email and click the confirmation link to complete your registration.",
+            });
+          }
         }
       }
     } catch (error) {
+      console.error('Auth error:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -125,6 +165,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                   placeholder="Choose a unique username"
                   required={!isLogin}
                   disabled={loading}
+                  minLength={3}
                 />
               </div>
             )}
@@ -153,7 +194,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder="Enter your password (at least 6 characters)"
                 required
                 disabled={loading}
                 minLength={6}
@@ -163,7 +204,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-lavender-500 to-blush-500 hover:from-lavender-600 hover:to-blush-600"
-              disabled={loading}
+              disabled={loading || (!isLogin && username.length < 3)}
             >
               {loading ? (
                 <div className="flex items-center justify-center">
@@ -188,6 +229,13 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                 : 'Already have an account? Sign in'
               }
             </button>
+          </div>
+
+          {/* Helpful tip for testing */}
+          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <p className="text-xs text-blue-700">
+              💡 <strong>For testing:</strong> If email confirmation is required, check your email inbox for the confirmation link.
+            </p>
           </div>
         </CardContent>
       </Card>
