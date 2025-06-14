@@ -4,43 +4,39 @@ import { Linkedin } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-gradient-footer border-t border-cherry-red/30 backdrop-blur-sm z-40">
-      <div className="container mx-auto px-4 py-4 max-w-4xl">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          {/* Profile section */}
-          <div className="flex items-center gap-4">
-            <img
-              src="/lovable-uploads/b7b3be69-dbc1-44bb-bfcf-ce520ea51354.png"
-              alt="Rohan Singh"
-              className="w-12 h-12 rounded-full object-cover border-2 border-cherry-red shadow-lg hover-scale transition-all duration-300"
-            />
-            <div>
-              <h3 className="text-sm font-orbitron font-semibold gradient-text">
-                ✨ A Project by Rohan Singh
-              </h3>
-              <p className="text-xs text-gray-600">Full Stack Developer</p>
-            </div>
-          </div>
+    <footer className="bg-gradient-to-r from-gray-50 to-blue-50 border-t border-gray-200 mt-16">
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
+        <div className="animate-fade-in-up">
+          <h3 className="text-xl font-semibold text-gray-800 mb-6 text-center font-poppins">
+            ✨ A Project by Rohan Singh
+          </h3>
           
-          {/* Social links */}
-          <div className="flex items-center space-x-4">
-            <a
-              href="https://www.linkedin.com/in/rohan-singh-6b716022a"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center space-x-2 glass-card px-3 py-2 rounded-lg hover:glow-cherry-hover transition-all duration-300 hover-scale group"
-            >
-              <Linkedin 
-                size={16} 
-                className="text-cherry-red group-hover:text-white transition-colors duration-300" 
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8">
+            {/* Profile Photo */}
+            <div className="flex-shrink-0">
+              <img
+                src="/lovable-uploads/b7b3be69-dbc1-44bb-bfcf-ce520ea51354.png"
+                alt="Rohan Singh"
+                className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-white shadow-lg hover:scale-105 transition-transform duration-300"
               />
-              <span className="text-cherry-red text-sm font-medium group-hover:text-white transition-colors duration-300">
-                LinkedIn
-              </span>
-            </a>
+            </div>
             
-            <div className="text-xs text-gray-600">
-              © 2024 TIL App
+            {/* LinkedIn Link */}
+            <div className="flex items-center space-x-3">
+              <a
+                href="https://www.linkedin.com/in/rohan-singh-6b716022a"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center space-x-2 bg-white px-4 py-2 rounded-full shadow-md hover:shadow-lg transition-all duration-300 hover:scale-105 group"
+              >
+                <Linkedin 
+                  size={20} 
+                  className="text-blue-600 group-hover:text-blue-700 transition-colors duration-300" 
+                />
+                <span className="text-gray-700 font-medium font-poppins group-hover:text-gray-800 transition-colors duration-300">
+                  LinkedIn
+                </span>
+              </a>
             </div>
           </div>
         </div>

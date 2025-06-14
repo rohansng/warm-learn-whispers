@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { TILEntry, User } from '../types';
 import { getEntriesByUsername, getUser, saveUser, hasEntryForToday, getRandomPastEntry } from '../utils/localStorage';
@@ -41,9 +42,11 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
     }
     setUser(userData);
 
+    // Get random past entry for memory card
     const memory = getRandomPastEntry(username);
     setRandomMemory(memory);
 
+    // Show add entry card if no entry for today
     setShowAddEntry(!hasEntryForToday(username));
   };
 
@@ -52,19 +55,17 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-animated font-poppins">
+    <div className="min-h-screen bg-gradient-warm font-poppins">
       <Header user={user} onLogout={onLogout} />
       
-      <main className="container mx-auto px-4 py-8 max-w-4xl pb-32">
+      <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-8">
-          {/* Hero section with animated pulse */}
+          {/* Welcome back message */}
           <div className="text-center animate-fade-in">
-            <div className="pulse-cherry inline-block p-4 rounded-full bg-gradient-primary mb-4">
-              <h1 className="text-4xl font-orbitron font-bold text-white mb-2">
-                Welcome back, {username}! 🚀
-              </h1>
-            </div>
-            <p className="text-gray-600 text-lg">
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              Welcome back, {username}! 👋
+            </h1>
+            <p className="text-gray-600">
               {entries.length === 0 
                 ? "Ready to start your learning journey?" 
                 : `You've captured ${entries.length} amazing learning moment${entries.length === 1 ? '' : 's'}!`
@@ -74,14 +75,14 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
 
           {/* Random memory card */}
           {randomMemory && (
-            <div className="animate-scale-in">
+            <div className="animate-fade-in-up">
               <RandomMemoryCard entry={randomMemory} />
             </div>
           )}
 
           {/* Add entry card */}
           {showAddEntry && (
-            <div className="animate-slide-in-left">
+            <div className="animate-scale-in">
               <AddEntryCard username={username} onEntryAdded={handleEntryAdded} />
             </div>
           )}

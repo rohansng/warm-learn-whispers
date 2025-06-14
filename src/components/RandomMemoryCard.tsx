@@ -10,23 +10,21 @@ interface RandomMemoryCardProps {
 
 const RandomMemoryCard: React.FC<RandomMemoryCardProps> = ({ entry }) => {
   return (
-    <Card className="glass-card p-6 rounded-2xl glow-cherry animate-scale-in">
+    <Card className="p-6 bg-gradient-to-r from-blush-50 to-lavender-50 border-2 border-blush-200 shadow-lg animate-scale-in">
       <div className="flex items-start space-x-4">
         <div className="flex-shrink-0">
-          <Heart className="w-6 h-6 text-cherry-red animate-bounce-gentle" />
+          <Heart className="w-6 h-6 text-blush-500 animate-bounce-gentle" />
         </div>
         
         <div className="flex-1">
-          <h3 className="text-lg font-orbitron font-semibold gradient-text mb-2">
+          <h3 className="text-lg font-semibold text-blush-700 mb-2">
             💭 Remember what you learned?
           </h3>
           
-          <div className="glass rounded-lg p-4 mb-3">
+          <div className="bg-white/80 rounded-lg p-4 mb-3">
             <div className="flex items-center space-x-2 mb-2">
-              <div className="pulse-cherry p-1 rounded-full bg-gradient-primary">
-                <span className="text-2xl">{entry.emoji}</span>
-              </div>
-              <time className="text-sm font-medium text-cherry-red font-orbitron">
+              <span className="text-2xl">{entry.emoji}</span>
+              <time className="text-sm font-medium text-gray-600">
                 {new Date(entry.date).toLocaleDateString('en-US', {
                   month: 'long',
                   day: 'numeric',
@@ -44,7 +42,7 @@ const RandomMemoryCard: React.FC<RandomMemoryCardProps> = ({ entry }) => {
                 {entry.tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="inline-block px-2 py-1 text-xs rounded-full bg-gradient-primary text-white"
+                    className="inline-block px-2 py-1 text-xs rounded-full bg-blush-100 text-blush-700"
                   >
                     {tag}
                   </span>
@@ -53,7 +51,7 @@ const RandomMemoryCard: React.FC<RandomMemoryCardProps> = ({ entry }) => {
             )}
           </div>
           
-          <p className="text-sm text-cherry-red">
+          <p className="text-sm text-blush-600">
             ✨ Here's a beautiful moment from your learning journey!
           </p>
         </div>

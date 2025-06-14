@@ -20,7 +20,6 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				'orbitron': ['Orbitron', 'monospace'],
 				'poppins': ['Poppins', 'sans-serif'],
 			},
 			colors: {
@@ -57,22 +56,47 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// White & Red Cherry Cream theme colors
-				'cherry-red': '#ff4b5c',
-				'cherry-light': '#ff6b7a',
-				'cherry-dark': '#e63946',
-				'cream-white': '#ffffff',
-				'cream-light': '#fef7f7',
-				'cream-pink': '#ffe0e3',
-				'soft-gray': '#f8f9fa',
+				// Custom TIL colors
+				lavender: {
+					50: '#f7f5ff',
+					100: '#eee9fe',
+					200: '#e0d6fe',
+					300: '#cab8fc',
+					400: '#b08df8',
+					500: '#9966f0',
+					600: '#8b44e5',
+					700: '#7a33ca',
+					800: '#672ba6',
+					900: '#562687',
+				},
+				blush: {
+					50: '#fef7f7',
+					100: '#fdeef0',
+					200: '#fbe3e6',
+					300: '#f7cdd3',
+					400: '#f1a8b4',
+					500: '#e87a8a',
+					600: '#da5a6d',
+					700: '#c23c52',
+					800: '#a23247',
+					900: '#892e42',
+				},
+				mint: {
+					50: '#f0fdfa',
+					100: '#ccfbf1',
+					200: '#99f6e4',
+					300: '#5eead4',
+					400: '#2dd4bf',
+					500: '#14b8a6',
+					600: '#0d9488',
+					700: '#0f766e',
+					800: '#115e59',
+					900: '#134e4a',
+				},
 			},
 			backgroundImage: {
-				'gradient-primary': 'linear-gradient(135deg, #ffffff, #ff4b5c)',
-				'gradient-radial': 'radial-gradient(circle at top left, #ff4b5c, #ffffff)',
-				'gradient-diagonal': 'linear-gradient(to bottom right, #fef7f7, #ff4b5c, #ffffff)',
-				'gradient-footer': 'linear-gradient(to right, #ffffff, #ff4b5c)',
-				'gradient-animated': 'linear-gradient(-45deg, #ffffff, #ff4b5c, #ff6b7a, #fef7f7)',
-				'gradient-soft': 'linear-gradient(135deg, #fef7f7, #ffe0e3)',
+				'gradient-warm': 'linear-gradient(135deg, #f7f5ff 0%, #fef7f7 50%, #f0fdfa 100%)',
+				'gradient-card': 'linear-gradient(135deg, rgba(249, 168, 212, 0.1) 0%, rgba(196, 181, 253, 0.1) 50%, rgba(167, 243, 208, 0.1) 100%)',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -81,37 +105,58 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: { height: '0' },
-					to: { height: 'var(--radix-accordion-content-height)' }
+					from: {
+						height: '0'
+					},
+					to: {
+						height: 'var(--radix-accordion-content-height)'
+					}
 				},
 				'accordion-up': {
-					from: { height: 'var(--radix-accordion-content-height)' },
-					to: { height: '0' }
+					from: {
+						height: 'var(--radix-accordion-content-height)'
+					},
+					to: {
+						height: '0'
+					}
 				},
 				'fade-in': {
-					'0%': { opacity: '0', transform: 'translateY(10px)' },
-					'100%': { opacity: '1', transform: 'translateY(0)' }
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				},
 				'fade-in-up': {
-					'0%': { opacity: '0', transform: 'translateY(20px)' },
-					'100%': { opacity: '1', transform: 'translateY(0)' }
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(20px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
 				},
 				'bounce-gentle': {
-					'0%, 100%': { transform: 'translateY(0)' },
-					'50%': { transform: 'translateY(-5px)' }
+					'0%, 100%': {
+						transform: 'translateY(0)',
+					},
+					'50%': {
+						transform: 'translateY(-5px)',
+					}
 				},
 				'scale-in': {
-					'0%': { opacity: '0', transform: 'scale(0.9)' },
-					'100%': { opacity: '1', transform: 'scale(1)' }
-				},
-				'pulse-cherry': {
-					'0%, 100%': { boxShadow: '0 0 0 0 rgba(255, 75, 92, 0.7)' },
-					'70%': { boxShadow: '0 0 0 10px rgba(255, 75, 92, 0)' }
-				},
-				'gradient-shift': {
-					'0%': { backgroundPosition: '0% 50%' },
-					'50%': { backgroundPosition: '100% 50%' },
-					'100%': { backgroundPosition: '0% 50%' }
+					'0%': {
+						opacity: '0',
+						transform: 'scale(0.9)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'scale(1)'
+					}
 				}
 			},
 			animation: {
@@ -121,8 +166,6 @@ export default {
 				'fade-in-up': 'fade-in-up 0.8s ease-out',
 				'bounce-gentle': 'bounce-gentle 2s ease-in-out infinite',
 				'scale-in': 'scale-in 0.4s ease-out',
-				'pulse-cherry': 'pulse-cherry 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-				'gradient-shift': 'gradient-shift 8s ease infinite',
 			}
 		}
 	},
