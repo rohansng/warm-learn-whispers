@@ -68,7 +68,7 @@ const GuestAuth: React.FC<GuestAuthProps> = ({ onGuestSuccess, onBack }) => {
       }
 
       // Create user object for the app
-      const user: User = {
+      const user: UserType = {
         id: profile.id,
         username: profile.username,
         email: profile.email || '',
