@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from '@/components/ui/button';
@@ -7,10 +8,11 @@ import { useToast } from '@/hooks/use-toast';
 import { User } from '@supabase/supabase-js';
 import { Eye, EyeOff, User as UserIcon } from 'lucide-react';
 import GuestAuth from '../components/GuestAuth';
+import { User as AppUser } from '../types';
 
 interface AuthProps {
   onAuthSuccess: (user: User) => void;
-  onGuestSuccess?: (user: any) => void;
+  onGuestSuccess?: (user: AppUser) => void;
 }
 
 const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onGuestSuccess }) => {
@@ -182,7 +184,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onGuestSuccess }) => {
     setShowGuestAuth(true);
   };
 
-  const handleGuestSuccess = (user: any) => {
+  const handleGuestSuccess = (user: AppUser) => {
     console.log('Auth: Guest success received, user:', user);
     if (onGuestSuccess) {
       console.log('Auth: Calling onGuestSuccess');

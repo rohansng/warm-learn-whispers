@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -17,11 +18,19 @@ const GuestAuth: React.FC<GuestAuthProps> = ({ onGuestSuccess, onBack }) => {
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
+  // Generate a proper UUID for guest users
+  const generateGuestUUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  };
+
   const handleGuestAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
     console.log('GuestAuth: Starting guest auth for username:', username);
-    console.log('GuestAuth: onGuestSuccess callback:', typeof onGuestSuccess);
     
     if (!username.trim()) {
       toast({
@@ -52,9 +61,9 @@ const GuestAuth: React.FC<GuestAuthProps> = ({ onGuestSuccess, onBack }) => {
       console.log('GuestAuth: Profile lookup result:', profile);
       
       if (!profile) {
-        // Create new guest profile with a unique guest ID
-        const guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        console.log('GuestAuth: Creating new guest profile with ID:', guestId);
+        // Create new guest profile with a proper UUID
+        const guestId = generateGuestUUID();
+        console.log('GuestAuth: Creating new guest profile with UUID:', guestId);
         
         profile = await createProfile(guestId, trimmedUsername, '');
         
@@ -104,8 +113,6 @@ const GuestAuth: React.FC<GuestAuthProps> = ({ onGuestSuccess, onBack }) => {
       setLoading(false);
     }
   };
-
-  console.log('GuestAuth: Rendering component');
 
   return (
     <div className="min-h-screen bg-gradient-warm flex items-center justify-center p-4 font-poppins">
@@ -178,10 +185,7 @@ const GuestAuth: React.FC<GuestAuthProps> = ({ onGuestSuccess, onBack }) => {
             <Button
               type="button"
               variant="outline"
-              onClick={() => {
-                console.log('GuestAuth: Back button clicked');
-                onBack();
-              }}
+              onClick={onBack}
               className="w-full border-2 border-gray-200 text-gray-600 hover:bg-gray-50 rounded-xl py-3"
               disabled={loading}
             >
