@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
-import { TILEntry, User } from '../types';
+import { TILEntry, User, AuthUser } from '../types';
 import Header from './Header';
 import TILForm from './TILForm';
 import TILList from './TILList';
@@ -12,7 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 
 interface DashboardProps {
   username: string;
-  user: any;
+  user: AuthUser;
   onLogout: () => void;
 }
 
@@ -49,7 +49,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
           username: metaUsername,
           email: user.email || '',
           totalEntries: notes.length,
-          lastVisit: new Date()
+          lastVisit: new Date().toISOString()
         });
       } else {
         setUserData({
@@ -57,7 +57,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
           username: profile?.username || 'User',
           email: user.email || '',
           totalEntries: notes.length,
-          lastVisit: profile?.last_visit ? new Date(profile.last_visit) : new Date()
+          lastVisit: profile?.last_visit || new Date().toISOString()
         });
       }
     } catch (error) {
@@ -75,6 +75,17 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
     setUserData(prev => prev ? { ...prev, totalEntries: prev.totalEntries + 1 } : null);
   };
 
+  const handleEntryUpdate = (updatedEntry: TILEntry) => {
+    setEntries(entries.map(entry => 
+      entry.id === updatedEntry.id ? updatedEntry : entry
+    ));
+  };
+
+  const handleEntryDelete = (entryId: string) => {
+    setEntries(entries.filter(entry => entry.id !== entryId));
+    setUserData(prev => prev ? { ...prev, totalEntries: prev.totalEntries - 1 } : null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-warm font-poppins">
       <Header 
@@ -87,7 +98,11 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
             <TILForm userId={user.id} username={username} onEntryAdded={addEntry} />
-            <TILList entries={entries} />
+            <TILList 
+              entries={entries} 
+              onEntryUpdate={handleEntryUpdate}
+              onEntryDelete={handleEntryDelete}
+            />
           </div>
           <div className="space-y-6">
             <RandomTIL userId={user.id} />

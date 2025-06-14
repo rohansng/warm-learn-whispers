@@ -5,12 +5,22 @@ export interface TILEntry {
   content: string;
   tags: string[];
   date: string;
-  emoji?: string;
+  emoji: string;
   createdAt: Date;
 }
 
 export interface User {
+  id: string;
   username: string;
-  lastVisit?: Date;
+  email: string;
   totalEntries: number;
+  lastVisit: string;
+}
+
+export interface AuthUser {
+  id: string;
+  email?: string;
+  user_metadata?: {
+    username?: string;
+  };
 }

@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { ChatRoom, Message, ChatRequest, UserSettings } from "@/types/chat";
 
@@ -29,6 +30,20 @@ export const sendChatRequest = async (receiverId: string, message?: string) => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return null;
 
+  // Check if request already exists
+  const { data: existingRequest } = await supabase
+    .from('chat_requests')
+    .select('*')
+    .eq('sender_id', user.id)
+    .eq('receiver_id', receiverId)
+    .eq('status', 'pending')
+    .maybeSingle();
+
+  if (existingRequest) {
+    console.log('Chat request already sent');
+    return null;
+  }
+
   const { data, error } = await supabase
     .from('chat_requests')
     .insert({
@@ -56,7 +71,7 @@ export const getChatRequests = async () => {
     .from('chat_requests')
     .select(`
       *,
-      sender:sender_id(username, email)
+      sender:profiles!chat_requests_sender_id_fkey(username, email)
     `)
     .eq('receiver_id', user.id)
     .eq('status', 'pending')
@@ -101,6 +116,8 @@ export const createChatRoom = async (participant1: string, participant2: string)
     .upsert({
       participant_1: p1,
       participant_2: p2
+    }, {
+      onConflict: 'participant_1,participant_2'
     })
     .select()
     .single();
@@ -121,8 +138,8 @@ export const getChatRooms = async () => {
     .from('chat_rooms')
     .select(`
       *,
-      participant1:participant_1(username, email, last_visit),
-      participant2:participant_2(username, email, last_visit)
+      participant1:profiles!chat_rooms_participant_1_fkey(username, email, last_visit),
+      participant2:profiles!chat_rooms_participant_2_fkey(username, email, last_visit)
     `)
     .or(`participant_1.eq.${user.id},participant_2.eq.${user.id}`)
     .order('last_message_at', { ascending: false });
@@ -140,7 +157,7 @@ export const getMessages = async (chatRoomId: string) => {
     .from('messages')
     .select(`
       *,
-      sender:sender_id(username, email)
+      sender:profiles!messages_sender_id_fkey(username, email)
     `)
     .eq('chat_room_id', chatRoomId)
     .eq('is_deleted', false)
