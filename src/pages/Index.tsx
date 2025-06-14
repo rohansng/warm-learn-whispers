@@ -19,6 +19,8 @@ const Index = () => {
 
     // Check for existing guest session
     const storedGuestUser = localStorage.getItem('guestUser');
+    console.log('Checking for stored guest user:', storedGuestUser);
+    
     if (storedGuestUser) {
       try {
         const parsedGuestUser = JSON.parse(storedGuestUser);
@@ -99,14 +101,22 @@ const Index = () => {
   };
 
   const handleGuestSuccess = (guestUserData: AppUser) => {
-    console.log('Guest success received:', guestUserData);
+    console.log('Guest success received in Index:', guestUserData);
+    
+    // Clear any existing auth state
+    setUser(null);
+    
+    // Set guest user state
     setGuestUser(guestUserData);
-    setUser(null); // Clear auth state
     setLoading(false);
     
     // Store in localStorage for persistence
-    localStorage.setItem('guestUser', JSON.stringify(guestUserData));
-    console.log('Guest user stored in localStorage');
+    try {
+      localStorage.setItem('guestUser', JSON.stringify(guestUserData));
+      console.log('Guest user stored in localStorage successfully');
+    } catch (error) {
+      console.error('Failed to store guest user in localStorage:', error);
+    }
   };
 
   const handleLogout = async () => {
@@ -142,6 +152,8 @@ const Index = () => {
     }
   };
 
+  console.log('Current state - user:', user?.email, 'guestUser:', guestUser?.username, 'loading:', loading);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-warm font-poppins flex flex-col">
@@ -157,6 +169,7 @@ const Index = () => {
   }
 
   if (!user && !guestUser) {
+    console.log('Rendering Auth component - no user or guest user found');
     return (
       <div className="min-h-screen bg-gradient-warm font-poppins flex flex-col">
         <div className="flex-1">
@@ -178,10 +191,12 @@ const Index = () => {
     // Authenticated user
     username = user.user_metadata?.username || user.email?.split('@')[0] || 'User';
     currentUser = user;
+    console.log('Rendering dashboard for authenticated user:', username);
   } else if (guestUser) {
     // Guest user
     username = guestUser.username;
     currentUser = guestUser;
+    console.log('Rendering dashboard for guest user:', username);
   }
 
   return (

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,6 +20,8 @@ const GuestAuth: React.FC<GuestAuthProps> = ({ onGuestSuccess, onBack }) => {
   const handleGuestAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log('Starting guest auth for username:', username);
+    
     if (!username.trim()) {
       toast({
         variant: "destructive",
@@ -42,28 +43,36 @@ const GuestAuth: React.FC<GuestAuthProps> = ({ onGuestSuccess, onBack }) => {
     setLoading(true);
 
     try {
+      const trimmedUsername = username.trim();
+      console.log('Checking for existing profile with username:', trimmedUsername);
+      
       // Check if username exists
-      let profile = await getProfileByUsername(username.trim());
+      let profile = await getProfileByUsername(trimmedUsername);
+      console.log('Profile lookup result:', profile);
       
       if (!profile) {
         // Create new guest profile with a unique guest ID
         const guestId = `guest_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        profile = await createProfile(guestId, username.trim(), '');
+        console.log('Creating new guest profile with ID:', guestId);
+        
+        profile = await createProfile(guestId, trimmedUsername, '');
         
         if (!profile) {
           throw new Error('Failed to create guest profile');
         }
 
+        console.log('New guest profile created:', profile);
         toast({
           title: "Welcome!",
-          description: `Guest account created for ${username.trim()}. Your data will be saved and accessible from any device with this username.`,
+          description: `Guest account created for ${trimmedUsername}. Your data will be saved and accessible from any device with this username.`,
         });
       } else {
         // Existing username found - load their data
+        console.log('Found existing profile:', profile);
         const notes = await getNotesByUserId(profile.id);
         toast({
           title: "Welcome back!",
-          description: `Found ${notes.length} saved learning${notes.length !== 1 ? 's' : ''} for ${username.trim()}.`,
+          description: `Found ${notes.length} saved learning${notes.length !== 1 ? 's' : ''} for ${trimmedUsername}.`,
         });
       }
 
@@ -76,10 +85,9 @@ const GuestAuth: React.FC<GuestAuthProps> = ({ onGuestSuccess, onBack }) => {
         lastVisit: profile.last_visit || new Date().toISOString()
       };
 
-      // Store guest session in localStorage
-      localStorage.setItem('guestUser', JSON.stringify(user));
-      
+      console.log('Calling onGuestSuccess with user:', user);
       onGuestSuccess(user);
+      
     } catch (error) {
       console.error('Guest auth error:', error);
       toast({
