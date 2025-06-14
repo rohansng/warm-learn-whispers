@@ -54,7 +54,7 @@ export const saveUser = async (user: User): Promise<void> => {
   try {
     let profile = await getProfileByUsername(user.username);
     if (!profile) {
-      profile = await createProfile(user.username);
+      profile = await createProfile('', user.username, '');
     }
     if (profile) {
       await updateProfile(profile.id, {
