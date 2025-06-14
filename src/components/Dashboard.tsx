@@ -60,7 +60,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
     try {
       console.log('Loading user data for:', username, 'User ID:', user.id);
       
-      // Get or create user profile
+      // Get or create user profile with better error handling
       let profileData = null;
       
       try {
@@ -68,30 +68,37 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
-        if (profileError && profileError.code === 'PGRST116') {
-          // Profile doesn't exist, create one
+        if (profileError && profileError.code !== 'PGRST116') {
+          console.error('Error fetching profile:', profileError);
+        }
+
+        if (!existingProfile) {
+          // Profile doesn't exist, create one with unique username
           console.log('Creating new profile for:', username);
+          const baseUsername = user.user_metadata?.username || username || user.email?.split('@')[0] || 'user';
+          const uniqueUsername = `${baseUsername}${Date.now().toString().slice(-4)}`;
+          
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert([{
               id: user.id,
-              username: username,
+              username: uniqueUsername,
               email: user.email || '',
               total_entries: 0,
               last_visit: new Date().toISOString()
             }])
             .select()
-            .single();
+            .maybeSingle();
 
           if (createError) {
             console.error('Failed to create profile:', createError);
-            // Continue without profile for now
+            // Continue without profile creation failure blocking the app
           } else {
             profileData = newProfile;
           }
-        } else if (!profileError) {
+        } else {
           profileData = existingProfile;
           // Update last visit
           await supabase
@@ -101,6 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
         }
       } catch (error) {
         console.error('Profile handling error:', error);
+        // Don't block the app if profile operations fail
       }
 
       // Get user's notes
@@ -116,7 +124,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
       } else {
         const formattedEntries = (userEntries || []).map(note => ({
           id: note.id,
-          username: username,
+          username: profileData?.username || username,
           content: note.content,
           tags: note.tags || [],
           date: note.date,
@@ -142,7 +150,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
 
       // Get random memory and check if should show add entry
       const memory = await getRandomPastEntryFromDB(user.id);
-      setRandomMemory(memory ? { ...memory, username } : null);
+      setRandomMemory(memory ? { ...memory, username: profileData?.username || username } : null);
 
       const hasToday = await hasEntryForTodayInDB(user.id);
       console.log('Has entry for today:', hasToday);
@@ -185,7 +193,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
           {/* Welcome back message */}
           <div className="text-center animate-fade-in">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Welcome back, {username}! 👋
+              Welcome back, {appUser?.username || username}! 👋
             </h1>
             <p className="text-gray-600">
               {entries.length === 0 
@@ -208,7 +216,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
           {/* Add entry card */}
           {showAddEntry && (
             <div className="animate-scale-in">
-              <AddEntryCard username={username} userId={user.id} onEntryAdded={handleEntryAdded} />
+              <AddEntryCard username={appUser?.username || username} userId={user.id} onEntryAdded={handleEntryAdded} />
             </div>
           )}
 
@@ -222,7 +230,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
       <Footer />
       
       {/* Chat Component */}
-      <UserChat username={username} />
+      <UserChat username={appUser?.username || username} />
     </div>
   );
 };

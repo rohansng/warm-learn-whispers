@@ -37,6 +37,11 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
     return () => subscription.unsubscribe();
   }, [onAuthSuccess]);
 
+  const generateUniqueUsername = (baseUsername: string) => {
+    const timestamp = Date.now().toString().slice(-4);
+    return `${baseUsername}${timestamp}`;
+  };
+
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -51,25 +56,13 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 
         if (error) {
           console.error('Login error:', error);
-          if (error.message.includes('Invalid login credentials')) {
-            toast({
-              variant: "destructive",
-              title: "Login Failed",
-              description: "Invalid email or password. Please check your credentials and try again.",
-            });
-          } else if (error.message.includes('Email not confirmed')) {
-            toast({
-              variant: "destructive",
-              title: "Email Not Confirmed",
-              description: "Please check your email and click the confirmation link before logging in.",
-            });
-          } else {
-            toast({
-              variant: "destructive",
-              title: "Login Failed",
-              description: error.message,
-            });
-          }
+          toast({
+            variant: "destructive",
+            title: "Login Failed",
+            description: error.message.includes('Invalid login credentials') 
+              ? "Invalid email or password. Please check your credentials." 
+              : error.message,
+          });
         } else if (data.user) {
           console.log('Login successful for:', data.user.email);
           toast({
@@ -79,17 +72,19 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           onAuthSuccess(data.user);
         }
       } else {
-        // Sign up with simplified approach
+        // Sign up flow
         console.log('Attempting signup for:', email, 'with username:', username);
         
-        // First, try to sign up the user
+        const baseUsername = username.trim() || email.split('@')[0];
+        const uniqueUsername = generateUniqueUsername(baseUsername);
+        
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
           options: {
             data: {
-              username: username.trim(),
-              full_name: username.trim()
+              username: uniqueUsername,
+              full_name: uniqueUsername
             }
           }
         });
@@ -104,18 +99,6 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
               description: "An account with this email already exists. Please try logging in instead.",
             });
             setIsLogin(true);
-          } else if (error.message.includes('Password should be at least 6 characters')) {
-            toast({
-              variant: "destructive",
-              title: "Password Too Short",
-              description: "Password should be at least 6 characters long.",
-            });
-          } else if (error.message.includes('Database error')) {
-            toast({
-              variant: "destructive",
-              title: "Signup Issue",
-              description: "There seems to be a temporary issue. Please try again in a moment, or try logging in if you already have an account.",
-            });
           } else {
             toast({
               variant: "destructive",
@@ -137,7 +120,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             // Email confirmation required
             toast({
               title: "Almost Done!",
-              description: "Please check your email and click the confirmation link to complete your registration. Then you can log in.",
+              description: "Please check your email and click the confirmation link to complete your registration.",
             });
             setIsLogin(true);
           }
@@ -148,7 +131,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       toast({
         variant: "destructive",
         title: "Connection Error",
-        description: "Unable to connect to authentication service. Please check your internet connection and try again.",
+        description: "Unable to connect to authentication service. Please try again.",
       });
     } finally {
       setLoading(false);
@@ -172,19 +155,18 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             {!isLogin && (
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
-                  Username
+                  Username (optional)
                 </label>
                 <Input
                   id="username"
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Choose a unique username"
-                  required={!isLogin}
+                  placeholder="Choose a username (or we'll create one)"
                   disabled={loading}
-                  minLength={3}
                   maxLength={20}
                 />
+                <p className="text-xs text-gray-500 mt-1">Leave blank to auto-generate from email</p>
               </div>
             )}
             
@@ -222,7 +204,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-lavender-500 to-blush-500 hover:from-lavender-600 hover:to-blush-600"
-              disabled={loading || (!isLogin && username.trim().length < 3) || email.trim().length === 0}
+              disabled={loading || email.trim().length === 0}
             >
               {loading ? (
                 <div className="flex items-center justify-center">
@@ -249,7 +231,6 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             </button>
           </div>
 
-          {/* Helpful tip */}
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="text-xs text-blue-700">
               💡 <strong>Having trouble?</strong> Try refreshing the page or using a different email address.
