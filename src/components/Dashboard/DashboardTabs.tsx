@@ -17,7 +17,7 @@ interface DashboardTabsProps {
   userProfile: User | null;
   randomEntry: TILEntry | null;
   isGuest: boolean;
-  onEntryAdded: (newEntry: TILEntry) => void;
+  onEntryAdded: () => void;
   onEntryUpdate: (updatedEntry: TILEntry) => void;
   onEntryDelete: (entryId: string) => void;
 }
