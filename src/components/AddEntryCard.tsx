@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { TILEntry } from '../types';
-import { getProfileByUsername, saveNote } from '../utils/supabaseStorage';
+import { getProfileByUsername, createProfile, saveNote } from '../utils/supabaseStorage';
 import { getCategoryEmoji } from '../utils/emojis';
 import { Plus, Tag, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -58,17 +58,29 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
     setIsSubmitting(true);
 
     try {
-      // Get user profile
-      const profile = await getProfileByUsername(username);
+      console.log('Getting profile for username:', username);
+      
+      // Get user profile, create if it doesn't exist
+      let profile = await getProfileByUsername(username);
+      
       if (!profile) {
-        toast({
-          title: "Error",
-          description: "User profile not found. Please try logging in again.",
-          variant: "destructive"
-        });
-        setIsSubmitting(false);
-        return;
+        console.log('Profile not found, creating new profile for:', username);
+        profile = await createProfile(username);
+        
+        if (!profile) {
+          console.error('Failed to create profile for:', username);
+          toast({
+            title: "Error",
+            description: "Failed to create user profile. Please try again.",
+            variant: "destructive"
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        console.log('Successfully created profile:', profile);
       }
+
+      console.log('Using profile:', profile);
 
       const entry = {
         content: content.trim(),
@@ -77,9 +89,11 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
         emoji: getCategoryEmoji(tags)
       };
 
+      console.log('Saving note with entry:', entry);
       const savedNote = await saveNote(profile.id, entry);
       
       if (savedNote) {
+        console.log('Note saved successfully:', savedNote);
         toast({
           title: "Success! 🎉",
           description: "Your learning moment has been saved!",
