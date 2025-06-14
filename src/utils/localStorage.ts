@@ -1,64 +1,92 @@
 
 import { TILEntry, User } from '../types';
+import { 
+  getProfileByUsername, 
+  createProfile, 
+  updateProfile, 
+  getNotesByUserId,
+  saveNote,
+  hasEntryForTodayInDB,
+  getRandomPastEntryFromDB
+} from './supabaseStorage';
 
-const ENTRIES_KEY = 'til_entries';
-const USERS_KEY = 'til_users';
-
-export const saveEntry = (entry: TILEntry): void => {
-  const entries = getEntries();
-  entries.push(entry);
-  localStorage.setItem(ENTRIES_KEY, JSON.stringify(entries));
-};
-
-export const getEntries = (): TILEntry[] => {
-  const stored = localStorage.getItem(ENTRIES_KEY);
-  return stored ? JSON.parse(stored) : [];
-};
-
-export const getEntriesByUsername = (username: string): TILEntry[] => {
-  const entries = getEntries();
-  return entries.filter(entry => entry.username.toLowerCase() === username.toLowerCase());
-};
-
-export const hasEntryForToday = (username: string): boolean => {
-  const entries = getEntriesByUsername(username);
-  const today = new Date().toDateString();
-  return entries.some(entry => new Date(entry.date).toDateString() === today);
-};
-
-export const saveUser = (user: User): void => {
-  const users = getUsers();
-  const existingUserIndex = users.findIndex(u => u.username.toLowerCase() === user.username.toLowerCase());
-  
-  if (existingUserIndex >= 0) {
-    users[existingUserIndex] = user;
-  } else {
-    users.push(user);
+// Legacy functions that now use Supabase backend
+export const saveEntry = async (entry: TILEntry): Promise<void> => {
+  try {
+    const profile = await getProfileByUsername(entry.username);
+    if (profile) {
+      await saveNote(profile.id, entry);
+    }
+  } catch (error) {
+    console.error('Error saving entry:', error);
   }
-  
-  localStorage.setItem(USERS_KEY, JSON.stringify(users));
 };
 
-export const getUser = (username: string): User | null => {
-  const users = getUsers();
-  return users.find(u => u.username.toLowerCase() === username.toLowerCase()) || null;
+export const getEntriesByUsername = async (username: string): Promise<TILEntry[]> => {
+  try {
+    const profile = await getProfileByUsername(username);
+    if (profile) {
+      return await getNotesByUserId(profile.id);
+    }
+  } catch (error) {
+    console.error('Error getting entries:', error);
+  }
+  return [];
 };
 
-export const getUsers = (): User[] => {
-  const stored = localStorage.getItem(USERS_KEY);
-  return stored ? JSON.parse(stored) : [];
+export const getUser = async (username: string): Promise<User | null> => {
+  try {
+    const profile = await getProfileByUsername(username);
+    if (profile) {
+      return {
+        username: profile.username,
+        totalEntries: profile.total_entries,
+        lastVisit: new Date(profile.last_visit)
+      };
+    }
+  } catch (error) {
+    console.error('Error getting user:', error);
+  }
+  return null;
 };
 
-export const getRandomPastEntry = (username: string): TILEntry | null => {
-  const entries = getEntriesByUsername(username);
-  const pastEntries = entries.filter(entry => {
-    const entryDate = new Date(entry.date).toDateString();
-    const today = new Date().toDateString();
-    return entryDate !== today;
-  });
-  
-  if (pastEntries.length === 0) return null;
-  
-  const randomIndex = Math.floor(Math.random() * pastEntries.length);
-  return pastEntries[randomIndex];
+export const saveUser = async (user: User): Promise<void> => {
+  try {
+    let profile = await getProfileByUsername(user.username);
+    if (!profile) {
+      profile = await createProfile(user.username);
+    }
+    if (profile) {
+      await updateProfile(profile.id, {
+        total_entries: user.totalEntries,
+        last_visit: user.lastVisit?.toISOString()
+      });
+    }
+  } catch (error) {
+    console.error('Error saving user:', error);
+  }
+};
+
+export const hasEntryForToday = async (username: string): Promise<boolean> => {
+  try {
+    const profile = await getProfileByUsername(username);
+    if (profile) {
+      return await hasEntryForTodayInDB(profile.id);
+    }
+  } catch (error) {
+    console.error('Error checking today entry:', error);
+  }
+  return false;
+};
+
+export const getRandomPastEntry = async (username: string): Promise<TILEntry | null> => {
+  try {
+    const profile = await getProfileByUsername(username);
+    if (profile) {
+      return await getRandomPastEntryFromDB(profile.id);
+    }
+  } catch (error) {
+    console.error('Error getting random entry:', error);
+  }
+  return null;
 };

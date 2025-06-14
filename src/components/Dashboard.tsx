@@ -1,7 +1,15 @@
 
 import React, { useState, useEffect } from 'react';
 import { TILEntry, User } from '../types';
-import { getEntriesByUsername, getUser, saveUser, hasEntryForToday, getRandomPastEntry } from '../utils/localStorage';
+import { 
+  getProfileByUsername, 
+  createProfile, 
+  updateProfile, 
+  getNotesByUserId,
+  hasEntryForTodayInDB,
+  getRandomPastEntryFromDB
+} from '../utils/supabaseStorage';
+import { supabase } from "@/integrations/supabase/client";
 import Header from './Header';
 import AddEntryCard from './AddEntryCard';
 import TimelineView from './TimelineView';
@@ -18,41 +26,91 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
   const [user, setUser] = useState<User | null>(null);
   const [randomMemory, setRandomMemory] = useState<TILEntry | null>(null);
   const [showAddEntry, setShowAddEntry] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     loadUserData();
+    
+    // Set up realtime subscription for notes
+    const channel = supabase
+      .channel('notes-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'notes'
+        },
+        () => {
+          // Reload data when notes change
+          loadUserData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [username]);
 
-  const loadUserData = () => {
-    const userEntries = getEntriesByUsername(username);
-    setEntries(userEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    
-    let userData = getUser(username);
-    if (!userData) {
-      userData = {
-        username,
-        totalEntries: userEntries.length,
-        lastVisit: new Date()
-      };
-      saveUser(userData);
-    } else {
-      userData.lastVisit = new Date();
-      userData.totalEntries = userEntries.length;
-      saveUser(userData);
+  const loadUserData = async () => {
+    setLoading(true);
+    try {
+      // Get or create user profile
+      let profile = await getProfileByUsername(username);
+      
+      if (!profile) {
+        profile = await createProfile(username);
+      }
+
+      if (profile) {
+        // Update last visit and get notes
+        const updatedProfile = await updateProfile(profile.id, {
+          last_visit: new Date().toISOString()
+        });
+
+        const userEntries = await getNotesByUserId(profile.id);
+        setEntries(userEntries.map(entry => ({ ...entry, username })));
+
+        // Update total entries count
+        await updateProfile(profile.id, {
+          total_entries: userEntries.length
+        });
+
+        setUser({
+          username: profile.username,
+          totalEntries: userEntries.length,
+          lastVisit: new Date(profile.last_visit)
+        });
+
+        // Get random memory and check if should show add entry
+        const memory = await getRandomPastEntryFromDB(profile.id);
+        setRandomMemory(memory ? { ...memory, username } : null);
+
+        const hasToday = await hasEntryForTodayInDB(profile.id);
+        setShowAddEntry(!hasToday);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setLoading(false);
     }
-    setUser(userData);
-
-    // Get random past entry for memory card
-    const memory = getRandomPastEntry(username);
-    setRandomMemory(memory);
-
-    // Show add entry card if no entry for today
-    setShowAddEntry(!hasEntryForToday(username));
   };
 
   const handleEntryAdded = () => {
     loadUserData();
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-warm font-poppins flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">📚</div>
+          <p className="text-gray-600">Loading your learning journey...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-warm font-poppins">
@@ -70,6 +128,9 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
                 ? "Ready to start your learning journey?" 
                 : `You've captured ${entries.length} amazing learning moment${entries.length === 1 ? '' : 's'}!`
               }
+            </p>
+            <p className="text-sm text-blue-600 mt-2">
+              ✨ Your notes now sync across all devices!
             </p>
           </div>
 
