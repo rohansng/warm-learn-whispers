@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { X, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +17,13 @@ interface AddEntryCardProps {
   onEntryAdded: () => void;
 }
 
+// Default tags to suggest to users
+const DEFAULT_TAGS = [
+  'programming', 'design', 'learning', 'work', 'life', 'health', 'cooking',
+  'books', 'science', 'technology', 'creativity', 'productivity', 'mindfulness',
+  'fitness', 'travel', 'music', 'art', 'business', 'finance', 'communication'
+];
+
 const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, userId, onEntryAdded }) => {
   const [content, setContent] = useState('');
   const [newTag, setNewTag] = useState('');
@@ -23,9 +31,10 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, userId, onEntryAd
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
 
-  const addTag = () => {
-    if (newTag.trim() && !tags.includes(newTag.trim())) {
-      setTags([...tags, newTag.trim()]);
+  const addTag = (tagToAdd?: string) => {
+    const tag = tagToAdd || newTag.trim();
+    if (tag && !tags.includes(tag)) {
+      setTags([...tags, tag]);
       setNewTag('');
     }
   };
@@ -39,6 +48,10 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, userId, onEntryAd
       e.preventDefault();
       addTag();
     }
+  };
+
+  const handleDefaultTagSelect = (value: string) => {
+    addTag(value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -137,46 +150,77 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, userId, onEntryAd
           </div>
           
           <div className="space-y-3">
-            <div className="flex space-x-2">
-              <Input
-                value={newTag}
-                onChange={(e) => setNewTag(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Add a tag (e.g., programming, cooking, life)"
-                className="flex-1 border-lavender-200 focus:border-lavender-400"
-                disabled={isSubmitting}
-              />
-              <Button
-                type="button"
-                onClick={addTag}
-                variant="outline"
-                size="icon"
-                className="border-lavender-300 text-lavender-600 hover:bg-lavender-50"
-                disabled={isSubmitting || !newTag.trim()}
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+            {/* Default tags selector */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Quick Tags (optional)
+              </label>
+              <Select onValueChange={handleDefaultTagSelect} disabled={isSubmitting}>
+                <SelectTrigger className="border-lavender-200 focus:border-lavender-400">
+                  <SelectValue placeholder="Choose from popular tags..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {DEFAULT_TAGS.filter(tag => !tags.includes(tag)).map((tag) => (
+                    <SelectItem key={tag} value={tag}>
+                      #{tag}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Custom tag input */}
+            <div>
+              <label className="text-sm font-medium text-gray-700 mb-2 block">
+                Create Custom Tag
+              </label>
+              <div className="flex space-x-2">
+                <Input
+                  value={newTag}
+                  onChange={(e) => setNewTag(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="Create your own tag..."
+                  className="flex-1 border-lavender-200 focus:border-lavender-400"
+                  disabled={isSubmitting}
+                />
+                <Button
+                  type="button"
+                  onClick={() => addTag()}
+                  variant="outline"
+                  size="icon"
+                  className="border-lavender-300 text-lavender-600 hover:bg-lavender-50"
+                  disabled={isSubmitting || !newTag.trim()}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
             
+            {/* Selected tags display */}
             {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag, index) => (
-                  <Badge
-                    key={index}
-                    variant="secondary"
-                    className="bg-lavender-100 text-lavender-700 hover:bg-lavender-200 px-3 py-1"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      onClick={() => removeTag(tag)}
-                      className="ml-2 hover:text-lavender-900"
-                      disabled={isSubmitting}
+              <div>
+                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                  Selected Tags
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag, index) => (
+                    <Badge
+                      key={index}
+                      variant="secondary"
+                      className="bg-lavender-100 text-lavender-700 hover:bg-lavender-200 px-3 py-1"
                     >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
+                      #{tag}
+                      <button
+                        type="button"
+                        onClick={() => removeTag(tag)}
+                        className="ml-2 hover:text-lavender-900"
+                        disabled={isSubmitting}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
               </div>
             )}
           </div>
@@ -192,7 +236,7 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, userId, onEntryAd
                 Saving your moment...
               </div>
             ) : (
-              "Save Today's Learning 🚀"
+              "Save Learning Moment 🚀"
             )}
           </Button>
         </form>

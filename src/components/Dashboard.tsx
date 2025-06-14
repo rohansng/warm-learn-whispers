@@ -4,7 +4,6 @@ import { TILEntry, User as AppUser } from '../types';
 import { User } from '@supabase/supabase-js';
 import { 
   getNotesByUserId,
-  hasEntryForTodayInDB,
   getRandomPastEntryFromDB
 } from '../utils/supabaseStorage';
 import { supabase } from "@/integrations/supabase/client";
@@ -26,7 +25,6 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
   const [entries, setEntries] = useState<TILEntry[]>([]);
   const [appUser, setAppUser] = useState<AppUser | null>(null);
   const [randomMemory, setRandomMemory] = useState<TILEntry | null>(null);
-  const [showAddEntry, setShowAddEntry] = useState(true);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -148,13 +146,10 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
         lastVisit: profileData?.last_visit ? new Date(profileData.last_visit) : undefined
       });
 
-      // Get random memory and check if should show add entry
+      // Get random memory
       const memory = await getRandomPastEntryFromDB(user.id);
       setRandomMemory(memory ? { ...memory, username: profileData?.username || username } : null);
 
-      const hasToday = await hasEntryForTodayInDB(user.id);
-      console.log('Has entry for today:', hasToday);
-      setShowAddEntry(!hasToday);
     } catch (error) {
       console.error('Error loading user data:', error);
       setAppUser({
@@ -162,7 +157,6 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
         totalEntries: 0,
         lastVisit: undefined
       });
-      setShowAddEntry(true);
     } finally {
       setLoading(false);
     }
@@ -213,12 +207,10 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
             </div>
           )}
 
-          {/* Add entry card */}
-          {showAddEntry && (
-            <div className="animate-scale-in">
-              <AddEntryCard username={appUser?.username || username} userId={user.id} onEntryAdded={handleEntryAdded} />
-            </div>
-          )}
+          {/* Add entry card - Always show */}
+          <div className="animate-scale-in">
+            <AddEntryCard username={appUser?.username || username} userId={user.id} onEntryAdded={handleEntryAdded} />
+          </div>
 
           {/* Timeline view */}
           <div className="animate-fade-in-up">
