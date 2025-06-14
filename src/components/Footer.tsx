@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
             {/* Profile Photo */}
             <div className="flex-shrink-0">
               <img
-                src="/lovable-uploads/b7b3be69-dbc1-44bb-bfcf-ce520ea51354.png"
+                src="/lovable-uploads/4db4454b-d1e2-4b31-8ee9-d3bd59dfc8be.png"
                 alt="Rohan Singh"
                 className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-4 border-red-600 shadow-lg hover:scale-105 transition-transform duration-300 hover:shadow-red-600/50 hover:shadow-2xl"
               />
