@@ -4,16 +4,21 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
-import { useNotes } from '@/hooks/useNotes';
+import { TILEntry } from '../types';
+import { saveEntry } from '../utils/localStorage';
 import { getCategoryEmoji } from '../utils/emojis';
 import { Plus, Tag } from 'lucide-react';
 
-const AddEntryCard: React.FC = () => {
+interface AddEntryCardProps {
+  username: string;
+  onEntryAdded: () => void;
+}
+
+const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) => {
   const [content, setContent] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { addNote } = useNotes();
 
   const addTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
@@ -33,14 +38,27 @@ const AddEntryCard: React.FC = () => {
 
     setIsSubmitting(true);
 
-    const emoji = getCategoryEmoji(tags);
-    await addNote(content.trim(), tags, emoji);
+    const entry: TILEntry = {
+      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      username,
+      content: content.trim(),
+      tags: tags,
+      date: new Date().toISOString(),
+      emoji: getCategoryEmoji(tags),
+      createdAt: new Date()
+    };
+
+    saveEntry(entry);
     
     // Reset form
     setContent('');
     setTags([]);
     setTagInput('');
-    setIsSubmitting(false);
+    
+    setTimeout(() => {
+      setIsSubmitting(false);
+      onEntryAdded();
+    }, 500);
   };
 
   return (
