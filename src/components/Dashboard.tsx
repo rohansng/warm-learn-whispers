@@ -3,14 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { User as AppUser } from '../types';
 import Header from './Header';
-import AddEntryCard from './AddEntryCard';
-import TILList from './TILList';
-import RandomMemoryCard from './RandomMemoryCard';
-import TimelineView from './TimelineView';
-import ChatSystem from './Chat';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Book, MessageCircle, Clock, Sparkles } from 'lucide-react';
+import DashboardTabs from './Dashboard/DashboardTabs';
+import GuestBanner from './Dashboard/GuestBanner';
+import LoadingSpinner from './Dashboard/LoadingSpinner';
 import { useToast } from '@/hooks/use-toast';
 import { getNotesByUserId, createProfile, updateProfile } from '@/utils/supabaseStorage';
 import { TILEntry } from '../types';
@@ -123,14 +118,7 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout, isGuest
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-warm font-poppins flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-4xl mb-4 animate-bounce">📚</div>
-          <p className="text-gray-600">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -143,110 +131,19 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout, isGuest
       />
       
       <main className="container mx-auto px-4 py-6">
-        {isGuest && (
-          <div className="mb-6 p-4 bg-mint-50 border border-mint-200 rounded-xl">
-            <div className="flex items-center space-x-2">
-              <div className="text-2xl">👤</div>
-              <div>
-                <p className="font-medium text-mint-800">Guest Mode Active</p>
-                <p className="text-sm text-mint-600">
-                  Your learning data is saved and will be accessible on any device using the username "{username}".
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
+        {isGuest && <GuestBanner username={username} />}
 
-        <Tabs defaultValue="today" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-white/80 backdrop-blur-sm mb-6">
-            <TabsTrigger value="today" className="flex items-center space-x-2">
-              <Book className="w-4 h-4" />
-              <span>Today</span>
-            </TabsTrigger>
-            <TabsTrigger value="timeline" className="flex items-center space-x-2">
-              <Clock className="w-4 h-4" />
-              <span>Timeline</span>
-            </TabsTrigger>
-            <TabsTrigger value="memories" className="flex items-center space-x-2">
-              <Sparkles className="w-4 h-4" />
-              <span>Memories</span>
-            </TabsTrigger>
-            {!isGuest && (
-              <TabsTrigger value="chat" className="flex items-center space-x-2">
-                <MessageCircle className="w-4 h-4" />
-                <span>Chat</span>
-              </TabsTrigger>
-            )}
-          </TabsList>
-
-          <TabsContent value="today" className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <div className="lg:col-span-2 space-y-6">
-                <AddEntryCard 
-                  userId={user.id} 
-                  username={username} 
-                  onEntryAdded={handleEntryAdded}
-                />
-                <TILList 
-                  entries={entries}
-                  onEntryUpdate={handleEntryUpdate}
-                  onEntryDelete={handleEntryDelete}
-                />
-              </div>
-              <div className="space-y-6">
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-lavender-100">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">Your Progress</h3>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Total Learnings</span>
-                      <Badge variant="secondary" className="bg-lavender-100 text-lavender-700">
-                        {userProfile?.totalEntries || 0}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">This Month</span>
-                      <Badge variant="secondary" className="bg-mint-100 text-mint-700">
-                        {entries.filter(entry => {
-                          const entryDate = new Date(entry.date);
-                          const now = new Date();
-                          return entryDate.getMonth() === now.getMonth() && 
-                                 entryDate.getFullYear() === now.getFullYear();
-                        }).length}
-                      </Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-600">Account Type</span>
-                      <Badge variant={isGuest ? "outline" : "default"} className={isGuest ? "border-mint-300 text-mint-700" : "bg-lavender-500 text-white"}>
-                        {isGuest ? "Guest" : "Member"}
-                      </Badge>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="timeline">
-            <TimelineView entries={entries} />
-          </TabsContent>
-
-          <TabsContent value="memories">
-            {randomEntry ? (
-              <RandomMemoryCard entry={randomEntry} />
-            ) : (
-              <div className="text-center py-12">
-                <div className="text-4xl mb-4">📝</div>
-                <p className="text-gray-600">No memories to show yet. Start learning to create some!</p>
-              </div>
-            )}
-          </TabsContent>
-
-          {!isGuest && (
-            <TabsContent value="chat">
-              <ChatSystem userId={user.id} />
-            </TabsContent>
-          )}
-        </Tabs>
+        <DashboardTabs
+          user={user}
+          username={username}
+          entries={entries}
+          userProfile={userProfile}
+          randomEntry={randomEntry}
+          isGuest={isGuest}
+          onEntryAdded={handleEntryAdded}
+          onEntryUpdate={handleEntryUpdate}
+          onEntryDelete={handleEntryDelete}
+        />
       </main>
     </div>
   );
