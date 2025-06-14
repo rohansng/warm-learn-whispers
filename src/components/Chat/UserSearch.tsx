@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Search, UserPlus } from 'lucide-react';
+import { ArrowLeft, Search, UserPlus, CheckCircle } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { findUserByUsername, sendChatRequest } from '@/utils/chatService';
 import { useToast } from '@/hooks/use-toast';
@@ -17,12 +17,16 @@ const UserSearch: React.FC<UserSearchProps> = ({ userId, onBack }) => {
   const [searchResult, setSearchResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [requesting, setRequesting] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
   const { toast } = useToast();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
     setLoading(true);
+    setSearchResult(null);
+    setRequestSent(false);
+    
     const user = await findUserByUsername(searchQuery.trim());
     
     if (user && user.id === userId) {
@@ -52,20 +56,25 @@ const UserSearch: React.FC<UserSearchProps> = ({ userId, onBack }) => {
     const request = await sendChatRequest(searchResult.id, `Hi! I'd like to chat with you.`);
     
     if (request) {
+      setRequestSent(true);
       toast({
-        title: "Chat Request Sent",
-        description: `Your chat request has been sent to ${searchResult.username}`,
+        title: "Chat Request Sent! 🎉",
+        description: `Your chat request has been sent to ${searchResult.username}. They'll receive a notification.`,
       });
-      setSearchResult(null);
-      setSearchQuery('');
     } else {
       toast({
         variant: "destructive",
         title: "Request Failed",
-        description: "Failed to send chat request. They might have already been sent a request.",
+        description: "Failed to send chat request. You may have already sent a request to this user.",
       });
     }
     setRequesting(false);
+  };
+
+  const handleNewSearch = () => {
+    setSearchQuery('');
+    setSearchResult(null);
+    setRequestSent(false);
   };
 
   return (
@@ -108,27 +117,60 @@ const UserSearch: React.FC<UserSearchProps> = ({ userId, onBack }) => {
                   <p className="text-sm text-gray-500">{searchResult.email}</p>
                 </div>
               </div>
-              <Button
-                onClick={handleSendRequest}
-                disabled={requesting}
-                size="sm"
-                className="bg-purple-500 hover:bg-purple-600"
-              >
-                {requesting ? (
-                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                ) : (
-                  <UserPlus className="w-4 h-4" />
-                )}
-              </Button>
+              
+              {requestSent ? (
+                <div className="flex items-center space-x-2 text-green-600">
+                  <CheckCircle className="w-4 h-4" />
+                  <span className="text-sm font-medium">Request Sent</span>
+                </div>
+              ) : (
+                <Button
+                  onClick={handleSendRequest}
+                  disabled={requesting}
+                  size="sm"
+                  className="bg-purple-500 hover:bg-purple-600"
+                >
+                  {requesting ? (
+                    <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  ) : (
+                    <UserPlus className="w-4 h-4" />
+                  )}
+                </Button>
+              )}
             </div>
+            
+            {requestSent && (
+              <div className="mt-3 pt-3 border-t border-gray-100">
+                <Button
+                  onClick={handleNewSearch}
+                  variant="outline"
+                  size="sm"
+                  className="w-full"
+                >
+                  Search for Another User
+                </Button>
+              </div>
+            )}
           </div>
         )}
 
         {loading && (
           <div className="text-center text-gray-500 py-8">
-            Searching...
+            <div className="w-6 h-6 animate-spin rounded-full border-2 border-purple-500 border-t-transparent mx-auto mb-2" />
+            Searching for users...
           </div>
         )}
+
+        {/* Instructions */}
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
+          <h4 className="font-medium text-blue-800 mb-2">How to Start Chatting:</h4>
+          <ol className="text-sm text-blue-700 space-y-1">
+            <li>1. Search for a user by their username</li>
+            <li>2. Send them a chat request</li>
+            <li>3. Wait for them to accept your request</li>
+            <li>4. Start chatting once they accept!</li>
+          </ol>
+        </div>
       </div>
     </div>
   );
