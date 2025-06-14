@@ -26,12 +26,21 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout, isGuest
   const [entries, setEntries] = useState<TILEntry[]>([]);
   const [userProfile, setUserProfile] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [randomEntry, setRandomEntry] = useState<TILEntry | null>(null);
   const { toast } = useToast();
 
   // Load user data and entries
   useEffect(() => {
     loadUserData();
   }, [user]);
+
+  // Set random entry when entries change
+  useEffect(() => {
+    if (entries.length > 0) {
+      const randomIndex = Math.floor(Math.random() * entries.length);
+      setRandomEntry(entries[randomIndex]);
+    }
+  }, [entries]);
 
   const loadUserData = async () => {
     setLoading(true);
@@ -93,10 +102,23 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout, isGuest
     }
   };
 
-  const handleNewEntry = (newEntry: TILEntry) => {
+  const handleEntryAdded = (newEntry: TILEntry) => {
     setEntries(prev => [newEntry, ...prev]);
     if (userProfile) {
       setUserProfile(prev => prev ? { ...prev, totalEntries: prev.totalEntries + 1 } : null);
+    }
+  };
+
+  const handleEntryUpdate = (updatedEntry: TILEntry) => {
+    setEntries(prev => prev.map(entry => 
+      entry.id === updatedEntry.id ? updatedEntry : entry
+    ));
+  };
+
+  const handleEntryDelete = (entryId: string) => {
+    setEntries(prev => prev.filter(entry => entry.id !== entryId));
+    if (userProfile) {
+      setUserProfile(prev => prev ? { ...prev, totalEntries: Math.max(0, prev.totalEntries - 1) } : null);
     }
   };
 
@@ -163,9 +185,13 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout, isGuest
                 <AddEntryCard 
                   userId={user.id} 
                   username={username} 
-                  onNewEntry={handleNewEntry}
+                  onEntryAdded={handleEntryAdded}
                 />
-                <TILList entries={entries} />
+                <TILList 
+                  entries={entries}
+                  onEntryUpdate={handleEntryUpdate}
+                  onEntryDelete={handleEntryDelete}
+                />
               </div>
               <div className="space-y-6">
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-lavender-100">
@@ -205,7 +231,14 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout, isGuest
           </TabsContent>
 
           <TabsContent value="memories">
-            <RandomMemoryCard userId={user.id} />
+            {randomEntry ? (
+              <RandomMemoryCard entry={randomEntry} />
+            ) : (
+              <div className="text-center py-12">
+                <div className="text-4xl mb-4">📝</div>
+                <p className="text-gray-600">No memories to show yet. Start learning to create some!</p>
+              </div>
+            )}
           </TabsContent>
 
           {!isGuest && (
