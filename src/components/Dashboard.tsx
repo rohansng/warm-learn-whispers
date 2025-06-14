@@ -1,74 +1,47 @@
 
-import React, { useState, useEffect } from 'react';
-import { TILEntry, User } from '../types';
-import { getEntriesByUsername, getUser, saveUser, hasEntryForToday, getRandomPastEntry } from '../utils/localStorage';
+import React from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useNotes } from '@/hooks/useNotes';
 import Header from './Header';
 import AddEntryCard from './AddEntryCard';
 import TimelineView from './TimelineView';
 import RandomMemoryCard from './RandomMemoryCard';
 import Footer from './Footer';
 
-interface DashboardProps {
-  username: string;
-  onLogout: () => void;
-}
+const Dashboard: React.FC = () => {
+  const { profile } = useAuth();
+  const { notes, loading, hasNoteForToday, getRandomPastNote, getStreakCount } = useNotes();
 
-const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
-  const [entries, setEntries] = useState<TILEntry[]>([]);
-  const [user, setUser] = useState<User | null>(null);
-  const [randomMemory, setRandomMemory] = useState<TILEntry | null>(null);
-  const [showAddEntry, setShowAddEntry] = useState(false);
+  const randomMemory = getRandomPastNote();
+  const showAddEntry = !hasNoteForToday();
+  const streakCount = getStreakCount();
 
-  useEffect(() => {
-    loadUserData();
-  }, [username]);
-
-  const loadUserData = () => {
-    const userEntries = getEntriesByUsername(username);
-    setEntries(userEntries.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    
-    let userData = getUser(username);
-    if (!userData) {
-      userData = {
-        username,
-        totalEntries: userEntries.length,
-        lastVisit: new Date()
-      };
-      saveUser(userData);
-    } else {
-      userData.lastVisit = new Date();
-      userData.totalEntries = userEntries.length;
-      saveUser(userData);
-    }
-    setUser(userData);
-
-    // Get random past entry for memory card
-    const memory = getRandomPastEntry(username);
-    setRandomMemory(memory);
-
-    // Show add entry card if no entry for today
-    setShowAddEntry(!hasEntryForToday(username));
-  };
-
-  const handleEntryAdded = () => {
-    loadUserData();
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-warm flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-lavender-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your notes...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-warm font-poppins">
-      <Header user={user} onLogout={onLogout} />
+      <Header streakCount={streakCount} />
       
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-8">
           {/* Welcome back message */}
           <div className="text-center animate-fade-in">
             <h1 className="text-3xl font-bold text-gray-800 mb-2">
-              Welcome back, {username}! 👋
+              Welcome back, {profile?.username || 'learner'}! 👋
             </h1>
             <p className="text-gray-600">
-              {entries.length === 0 
+              {notes.length === 0 
                 ? "Ready to start your learning journey?" 
-                : `You've captured ${entries.length} amazing learning moment${entries.length === 1 ? '' : 's'}!`
+                : `You've captured ${notes.length} amazing learning moment${notes.length === 1 ? '' : 's'}!`
               }
             </p>
           </div>
@@ -83,13 +56,13 @@ const Dashboard: React.FC<DashboardProps> = ({ username, onLogout }) => {
           {/* Add entry card */}
           {showAddEntry && (
             <div className="animate-scale-in">
-              <AddEntryCard username={username} onEntryAdded={handleEntryAdded} />
+              <AddEntryCard />
             </div>
           )}
 
           {/* Timeline view */}
           <div className="animate-fade-in-up">
-            <TimelineView entries={entries} />
+            <TimelineView entries={notes} />
           </div>
         </div>
       </main>

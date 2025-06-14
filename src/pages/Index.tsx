@@ -1,34 +1,28 @@
 
-import React, { useState, useEffect } from 'react';
-import WelcomeScreen from '../components/WelcomeScreen';
-import Dashboard from '../components/Dashboard';
+import React from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import Auth from '@/components/Auth';
+import Dashboard from '@/components/Dashboard';
 
 const Index = () => {
-  const [currentUser, setCurrentUser] = useState<string | null>(null);
+  const { user, loading } = useAuth();
 
-  useEffect(() => {
-    // Check if user was previously logged in
-    const savedUser = localStorage.getItem('til_current_user');
-    if (savedUser) {
-      setCurrentUser(savedUser);
-    }
-  }, []);
-
-  const handleUsernameSubmit = (username: string) => {
-    setCurrentUser(username);
-    localStorage.setItem('til_current_user', username);
-  };
-
-  const handleLogout = () => {
-    setCurrentUser(null);
-    localStorage.removeItem('til_current_user');
-  };
-
-  if (!currentUser) {
-    return <WelcomeScreen onUsernameSubmit={handleUsernameSubmit} />;
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-warm flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-lavender-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your learning journey...</p>
+        </div>
+      </div>
+    );
   }
 
-  return <Dashboard username={currentUser} onLogout={handleLogout} />;
+  if (!user) {
+    return <Auth />;
+  }
+
+  return <Dashboard />;
 };
 
 export default Index;

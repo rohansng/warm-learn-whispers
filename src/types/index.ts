@@ -1,12 +1,13 @@
 
 export interface TILEntry {
   id: string;
-  username: string;
+  user_id: string;
   content: string;
   tags: string[];
   date: string;
   emoji?: string;
-  createdAt: Date;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface User {
