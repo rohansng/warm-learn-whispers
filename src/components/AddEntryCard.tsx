@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -50,7 +49,6 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
 
     saveEntry(entry);
     
-    // Reset form
     setContent('');
     setTags([]);
     setTagInput('');
@@ -62,10 +60,10 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
   };
 
   return (
-    <Card className="p-6 bg-gradient-card backdrop-blur-sm border-2 border-lavender-200 shadow-lg">
+    <Card className="glass-card p-6 rounded-2xl glow-red">
       <div className="flex items-center space-x-2 mb-4">
-        <Plus className="w-5 h-5 text-lavender-600" />
-        <h2 className="text-xl font-semibold text-gray-800">What did you learn today?</h2>
+        <Plus className="w-5 h-5 text-red-cherry" />
+        <h2 className="text-xl font-orbitron font-semibold text-white">What did you learn today?</h2>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -74,7 +72,7 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Share your learning moment... What new insight, skill, or knowledge did you gain today?"
-            className="min-h-[120px] border-2 border-lavender-200 focus:border-lavender-400 rounded-xl resize-none"
+            className="glass border-red-crimson/50 focus:border-red-cherry text-white placeholder-gray-400 min-h-[120px] rounded-xl resize-none transition-all duration-300"
             disabled={isSubmitting}
           />
         </div>
@@ -83,7 +81,7 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
           {tags.map((tag, index) => (
             <span
               key={index}
-              className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-lavender-100 text-lavender-800 cursor-pointer hover:bg-lavender-200 transition-colors"
+              className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-gradient-primary text-white cursor-pointer hover:glow-red-hover transition-all duration-300"
               onClick={() => removeTag(tag)}
             >
               {tag} ×
@@ -99,15 +97,14 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
               onChange={(e) => setTagInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
               placeholder="Add tags (e.g., coding, design, life)"
-              className="pl-10 border-2 border-lavender-200 focus:border-lavender-400 rounded-xl"
+              className="glass border-red-crimson/50 focus:border-red-cherry text-white placeholder-gray-400 pl-10 rounded-xl transition-all duration-300"
               disabled={isSubmitting}
             />
           </div>
           <Button
             type="button"
             onClick={addTag}
-            variant="outline"
-            className="border-lavender-300 text-lavender-700 hover:bg-lavender-50"
+            className="glass-card border-red-cherry/50 text-white hover:glow-red-hover transition-all duration-300"
             disabled={!tagInput.trim() || isSubmitting}
           >
             Add Tag
@@ -117,7 +114,7 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
         <Button
           type="submit"
           disabled={!content.trim() || isSubmitting}
-          className="w-full bg-gradient-to-r from-lavender-500 to-blush-500 hover:from-lavender-600 hover:to-blush-600 text-white font-semibold py-3 rounded-xl shadow-lg transform transition-all duration-300 hover:scale-105 disabled:opacity-50"
+          className="w-full bg-gradient-primary hover:glow-red-hover text-white font-semibold py-3 rounded-xl shadow-lg transform transition-all duration-300 hover-scale disabled:opacity-50"
         >
           {isSubmitting ? (
             <div className="flex items-center justify-center">
@@ -130,7 +127,7 @@ const AddEntryCard: React.FC<AddEntryCardProps> = ({ username, onEntryAdded }) =
         </Button>
       </form>
 
-      <p className="text-xs text-gray-500 mt-4 text-center">
+      <p className="text-xs text-gray-400 mt-4 text-center">
         ✨ You can add one entry per day. Make it count!
       </p>
     </Card>
