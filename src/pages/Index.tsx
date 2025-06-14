@@ -28,7 +28,7 @@ const Index = () => {
     return <WelcomeScreen onUsernameSubmit={handleUsernameSubmit} />;
   }
 
-  return <Dashboard />;
+  return <Dashboard username={currentUser} onLogout={handleLogout} />;
 };
 
 export default Index;
