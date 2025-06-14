@@ -27,6 +27,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onGuestSuccess }) => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
+        console.log('Auth: Found existing session, calling onAuthSuccess');
         onAuthSuccess(session.user);
       }
     });
@@ -34,6 +35,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onGuestSuccess }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session?.user) {
+        console.log('Auth: User signed in, calling onAuthSuccess');
         onAuthSuccess(session.user);
       }
     });
@@ -176,23 +178,36 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess, onGuestSuccess }) => {
   };
 
   const handleContinueAsGuest = () => {
+    console.log('Auth: Continue as guest clicked');
     setShowGuestAuth(true);
   };
 
   const handleGuestSuccess = (user: any) => {
+    console.log('Auth: Guest success received, user:', user);
     if (onGuestSuccess) {
+      console.log('Auth: Calling onGuestSuccess');
       onGuestSuccess(user);
+    } else {
+      console.error('Auth: onGuestSuccess callback not provided!');
     }
   };
 
+  const handleBackFromGuest = () => {
+    console.log('Auth: Back from guest auth');
+    setShowGuestAuth(false);
+  };
+
   if (showGuestAuth) {
+    console.log('Auth: Rendering GuestAuth component');
     return (
       <GuestAuth
         onGuestSuccess={handleGuestSuccess}
-        onBack={() => setShowGuestAuth(false)}
+        onBack={handleBackFromGuest}
       />
     );
   }
+
+  console.log('Auth: Rendering main auth form');
 
   return (
     <div className="min-h-screen bg-gradient-warm flex items-center justify-center p-4 font-poppins">
