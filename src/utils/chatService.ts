@@ -206,7 +206,7 @@ export const updateUserPresence = async (isOnline: boolean) => {
   }
 };
 
-export const getOnlineUsers = async () => {
+export const getOnlineUsers = async (): Promise<any[]> => {
   const { data, error } = await supabase
     .from('profiles')
     .select('id, username, email, is_online, last_visit')
