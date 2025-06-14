@@ -43,17 +43,19 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
 
     try {
       if (isLogin) {
+        console.log('Attempting login for:', email);
         const { data, error } = await supabase.auth.signInWithPassword({
-          email,
+          email: email.trim(),
           password,
         });
 
         if (error) {
+          console.error('Login error:', error);
           if (error.message.includes('Invalid login credentials')) {
             toast({
               variant: "destructive",
               title: "Login Failed",
-              description: "Invalid email or password. Please check your credentials.",
+              description: "Invalid email or password. Please check your credentials and try again.",
             });
           } else if (error.message.includes('Email not confirmed')) {
             toast({
@@ -69,6 +71,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             });
           }
         } else if (data.user) {
+          console.log('Login successful for:', data.user.email);
           toast({
             title: "Welcome back!",
             description: "You've been successfully logged in.",
@@ -76,19 +79,24 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           onAuthSuccess(data.user);
         }
       } else {
-        // Sign up
+        // Sign up with simplified approach
+        console.log('Attempting signup for:', email, 'with username:', username);
+        
+        // First, try to sign up the user
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: email.trim(),
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/`,
             data: {
-              username: username,
-            },
-          },
+              username: username.trim(),
+              full_name: username.trim()
+            }
+          }
         });
 
         if (error) {
+          console.error('Signup error:', error);
+          
           if (error.message.includes('User already registered')) {
             toast({
               variant: "destructive",
@@ -102,6 +110,12 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
               title: "Password Too Short",
               description: "Password should be at least 6 characters long.",
             });
+          } else if (error.message.includes('Database error')) {
+            toast({
+              variant: "destructive",
+              title: "Signup Issue",
+              description: "There seems to be a temporary issue. Please try again in a moment, or try logging in if you already have an account.",
+            });
           } else {
             toast({
               variant: "destructive",
@@ -110,6 +124,8 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             });
           }
         } else if (data.user) {
+          console.log('Signup successful for:', data.user.email);
+          
           if (data.user.email_confirmed_at) {
             // User is immediately confirmed
             toast({
@@ -120,9 +136,10 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
           } else {
             // Email confirmation required
             toast({
-              title: "Account Created!",
-              description: "Please check your email and click the confirmation link to complete your registration.",
+              title: "Almost Done!",
+              description: "Please check your email and click the confirmation link to complete your registration. Then you can log in.",
             });
+            setIsLogin(true);
           }
         }
       }
@@ -130,8 +147,8 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
       console.error('Auth error:', error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        title: "Connection Error",
+        description: "Unable to connect to authentication service. Please check your internet connection and try again.",
       });
     } finally {
       setLoading(false);
@@ -166,6 +183,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
                   required={!isLogin}
                   disabled={loading}
                   minLength={3}
+                  maxLength={20}
                 />
               </div>
             )}
@@ -204,7 +222,7 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-lavender-500 to-blush-500 hover:from-lavender-600 hover:to-blush-600"
-              disabled={loading || (!isLogin && username.length < 3)}
+              disabled={loading || (!isLogin && username.trim().length < 3) || email.trim().length === 0}
             >
               {loading ? (
                 <div className="flex items-center justify-center">
@@ -231,10 +249,10 @@ const Auth: React.FC<AuthProps> = ({ onAuthSuccess }) => {
             </button>
           </div>
 
-          {/* Helpful tip for testing */}
+          {/* Helpful tip */}
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="text-xs text-blue-700">
-              💡 <strong>For testing:</strong> If email confirmation is required, check your email inbox for the confirmation link.
+              💡 <strong>Having trouble?</strong> Try refreshing the page or using a different email address.
             </p>
           </div>
         </CardContent>

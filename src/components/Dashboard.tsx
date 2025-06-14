@@ -3,9 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { TILEntry, User as AppUser } from '../types';
 import { User } from '@supabase/supabase-js';
 import { 
-  getProfileByUsername, 
-  createProfile, 
-  updateProfile, 
   getNotesByUserId,
   hasEntryForTodayInDB,
   getRandomPastEntryFromDB
@@ -63,17 +60,19 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
     try {
       console.log('Loading user data for:', username, 'User ID:', user.id);
       
-      // Get or create user profile using the authenticated user's ID
-      let profile = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      // Get or create user profile
+      let profileData = null;
+      
+      try {
+        const { data: existingProfile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
 
-      if (profile.error && profile.error.code === 'PGRST116') {
-        // Profile doesn't exist, create one
-        console.log('Creating new profile for:', username);
-        try {
+        if (profileError && profileError.code === 'PGRST116') {
+          // Profile doesn't exist, create one
+          console.log('Creating new profile for:', username);
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert([{
@@ -88,51 +87,20 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
 
           if (createError) {
             console.error('Failed to create profile:', createError);
-            // Handle the case where profile creation fails
-            toast({
-              variant: "destructive",
-              title: "Profile Creation Error",
-              description: "There was an issue creating your profile. Some features may not work properly.",
-            });
-            // Continue with a basic app user setup
-            setAppUser({
-              username: username,
-              totalEntries: 0,
-              lastVisit: undefined
-            });
-            setLoading(false);
-            return;
+            // Continue without profile for now
+          } else {
+            profileData = newProfile;
           }
-          profile.data = newProfile;
-        } catch (createError) {
-          console.error('Profile creation exception:', createError);
-          setAppUser({
-            username: username,
-            totalEntries: 0,
-            lastVisit: undefined
-          });
-          setLoading(false);
-          return;
+        } else if (!profileError) {
+          profileData = existingProfile;
+          // Update last visit
+          await supabase
+            .from('profiles')
+            .update({ last_visit: new Date().toISOString() })
+            .eq('id', user.id);
         }
-      }
-
-      if (profile.error && profile.error.code !== 'PGRST116') {
-        console.error('Error fetching profile:', profile.error);
-        setAppUser({
-          username: username,
-          totalEntries: 0,
-          lastVisit: undefined
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Update last visit
-      if (profile.data) {
-        await supabase
-          .from('profiles')
-          .update({ last_visit: new Date().toISOString() })
-          .eq('id', user.id);
+      } catch (error) {
+        console.error('Profile handling error:', error);
       }
 
       // Get user's notes
@@ -157,8 +125,8 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
         }));
         setEntries(formattedEntries);
 
-        // Update total entries count
-        if (profile.data) {
+        // Update total entries count if profile exists
+        if (profileData) {
           await supabase
             .from('profiles')
             .update({ total_entries: formattedEntries.length })
@@ -167,9 +135,9 @@ const Dashboard: React.FC<DashboardProps> = ({ username, user, onLogout }) => {
       }
 
       setAppUser({
-        username: profile.data?.username || username,
+        username: profileData?.username || username,
         totalEntries: userEntries?.length || 0,
-        lastVisit: profile.data?.last_visit ? new Date(profile.data.last_visit) : undefined
+        lastVisit: profileData?.last_visit ? new Date(profileData.last_visit) : undefined
       });
 
       // Get random memory and check if should show add entry
